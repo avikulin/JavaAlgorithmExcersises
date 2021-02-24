@@ -10,9 +10,9 @@ public class RunTests {
    public static void main(String[] args){
          // set reference to testable function & setting time limit (time barrier)
         YTestRunner<Boolean, String> tr = new YTestRunner<Boolean, String>(
-                (String s)-> SolutionB.Calculate(s),
+                SolutionB::Calculate,
                 (Boolean a, Boolean b) -> a == b,
-                (Boolean b)->String.valueOf(b),
+                String::valueOf,
                 200);
 
         // add test case definitions

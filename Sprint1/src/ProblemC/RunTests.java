@@ -14,8 +14,8 @@ public class RunTests {
    public static void main(String[] args){
          // set reference to testable function & setting time limit (time barrier)
         YTestRunner<String,String[]> tr = new YTestRunner<String, String[]>(
-                (String[] s)-> SolutionC.Calculate(s),
-                (String a, String b) -> a.equals(b),
+                SolutionC::Calculate,
+                String::equals,
                 (String s)-> s,
                 200);
 

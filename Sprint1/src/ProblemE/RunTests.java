@@ -15,8 +15,8 @@ public class RunTests {
    public static void main(String[] args){
          // set reference to testable function & setting time limit (time barrier)
         YTestRunner<String[],String[]> tr = new YTestRunner<String[], String[]>(
-                (String[] s)-> GetLongestWord(s),
-                (String[] a, String[] b) -> Arrays.equals(a, b),
+                SolutionE::GetLongestWord,
+                Arrays::equals,
                 (String[] s) -> s[0],
                 200);
 

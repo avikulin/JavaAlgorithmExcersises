@@ -9,9 +9,9 @@ public class RunTests {
    public static void main(String[] args){
          // set reference to testable function & setting time limit (time barrier)
         YTestRunner<Integer, String> tr = new YTestRunner<Integer, String>(
-                (String s)-> SolutionA.Calculate(s),
-                (Integer a, Integer b) -> a.equals(b),
-                (Integer value) -> String.valueOf(value),
+                SolutionA::Calculate,
+                Integer::equals,
+                String::valueOf,
                 200);
 
         // add test case definitions

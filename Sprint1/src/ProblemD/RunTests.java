@@ -9,27 +9,27 @@ import YTester.YTestRunner;
 
 public class RunTests {
    public static void main(String[] args){
-         // set reference to testable function & setting time limit (time barrier)
-        YTestRunner<String,String[]> tr = new YTestRunner<String, String[]>(
-                (String[] s)-> SolutionD.GetStochasticRatio(s),
-                (String a, String b) -> a.equals(b),
-                (String s)-> s,
-                200);
+           // set reference to testable function & setting time limit (time barrier)
+           YTestRunner<String,String[]> tr = new YTestRunner<String, String[]>(
+                   SolutionD::GetStochasticRatio,
+                   String::equals,
+                   (String s)-> s,
+                   200);
 
-        // add test case definitions
-        tr.Append(new YTestCase<String,String[]>(new String[]{
-                "7",
-               "-1 -10 -8 0 2 0 5"
-        }, "3"));
+           // add test case definitions
+           tr.Append(new YTestCase<String,String[]>(new String[]{
+                   "7",
+                   "-1 -10 -8 0 2 0 5"
+           }, "3"));
 
 
 
-       tr.Append(new YTestCase<String,String[]>(new String[]{
-               "5",
-               "1 2 5 4 8"
-       }, "2"));
+           tr.Append(new YTestCase<String,String[]>(new String[]{
+                   "5",
+                   "1 2 5 4 8"
+           }, "2"));
 
-        // run all tests & print results to console
-        tr.run();
-    }
+           // run all tests & print results to console
+           tr.run();
+       }
 }
