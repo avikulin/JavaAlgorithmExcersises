@@ -3,12 +3,8 @@ package ProblemC;
 
 // import test utilities
 
-import ProblemC.SolutionC;
 import YTester.YTestCase;
 import YTester.YTestRunner;
-
-import java.lang.reflect.Array;
-import java.util.Arrays;
 
 public class RunTests {
    public static void main(String[] args){
@@ -20,7 +16,7 @@ public class RunTests {
                 200);
 
         // add test case definitions
-        tr.Append(new YTestCase<String,String[]>(new String[]{
+        tr.append(new YTestCase<String,String[]>(new String[]{
                 "4",
                 "3",
                 "1 2 3",
@@ -31,7 +27,7 @@ public class RunTests {
                 "0"
         }, "7 7"));
 
-       tr.Append(new YTestCase<String,String[]>(new String[]{
+       tr.append(new YTestCase<String,String[]>(new String[]{
                "4",
                "3",
                "1 2 3",

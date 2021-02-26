@@ -3,10 +3,11 @@ package YTester;
 
 /**
  * Container class for test-case
+ *
  * @param <T> Type of the input dataset
  * @param <R> Type of the result dataset
  */
-public class YTestCase< T, R> {
+public class YTestCase<T, R> {
     String Id;
     Boolean hasId = false;
     R input;
@@ -15,8 +16,9 @@ public class YTestCase< T, R> {
 
     /**
      * Constructor for general test-case
-     * @param input_data    Input dataset
-     * @param expectedResult    Dataset for Expected result
+     *
+     * @param input_data     Input dataset
+     * @param expectedResult Dataset for Expected result
      */
     public YTestCase(R input_data, T expectedResult) {
         this.input = input_data;
@@ -28,9 +30,10 @@ public class YTestCase< T, R> {
 
     /**
      * Constructor for identified test-case
-     * @param ID    Test-case ID
-     * @param input_data    Input dataset
-     * @param expectedResult    Dataset for Expected result
+     *
+     * @param ID             Test-case ID
+     * @param input_data     Input dataset
+     * @param expectedResult Dataset for Expected result
      */
     public YTestCase(String ID, R input_data, T expectedResult) {
         this.Id = ID;

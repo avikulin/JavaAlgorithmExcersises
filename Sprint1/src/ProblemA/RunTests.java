@@ -15,14 +15,14 @@ public class RunTests {
                 200);
 
         // add test case definitions
-        tr.Append(new YTestCase<Integer, String>("0 1 2 3", 5));
-        tr.Append(new YTestCase<Integer, String>("1 1 0 3", 4));
-        tr.Append(new YTestCase<Integer, String>("0 1 0 3", 3));
-        tr.Append(new YTestCase<Integer, String>("0 1 2 0", 2));
-        tr.Append(new YTestCase<Integer, String>("1 0 2 1", 1));
-        tr.Append(new YTestCase<Integer, String>("1 0 2 0", 0));
-        tr.Append(new YTestCase<Integer, String>("-8 -5 -2 7", -183));
-        tr.Append(new YTestCase<Integer, String>("8 2 9 -10", 40));
+        tr.append(new YTestCase<Integer, String>("0 1 2 3", 5));
+        tr.append(new YTestCase<Integer, String>("1 1 0 3", 4));
+        tr.append(new YTestCase<Integer, String>("0 1 0 3", 3));
+        tr.append(new YTestCase<Integer, String>("0 1 2 0", 2));
+        tr.append(new YTestCase<Integer, String>("1 0 2 1", 1));
+        tr.append(new YTestCase<Integer, String>("1 0 2 0", 0));
+        tr.append(new YTestCase<Integer, String>("-8 -5 -2 7", -183));
+        tr.append(new YTestCase<Integer, String>("8 2 9 -10", 40));
 
         // run all tests & print results to console
         tr.run();

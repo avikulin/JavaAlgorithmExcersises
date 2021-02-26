@@ -6,57 +6,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.StringJoiner;
-import java.util.StringTokenizer;
 
 /**
  * Вспомогательный класс консольных утилит
  */
-class YUtils {
-
-    /**
-     * Вспомогательный класс для пакетного зачитывания строк из консоли
-     * @param reader    Ссылка на экземпляр BufferedReader.
-     * @param numberOfStrings   Количество строк, которые нужно последовательно считать из консоли
-     * @return  Мыссив считанных строк (порядок строк сохранен)
-     * @throws IOException
-     */
-    static String[] GetFromConsole(BufferedReader reader, int numberOfStrings) throws IOException {
-        String[] res = new String[numberOfStrings];
-        for (int i=0; i < numberOfStrings; i++){
-            res[i] = reader.readLine();
-        }
-        return res;
-    }
-
-    /**
-     * Функция получения целочисленного значения из строки.
-     * @param input     Входная строка.
-     * @param needToTrim    Необходимость обрезки пробелов в начале и конце строки.
-     * @return  Целочисленное значение, полученное из строки.
-     */
-    static int GetParamScalar(String input, boolean needToTrim) {
-        if (needToTrim)
-            input = input.trim();
-        return Integer.parseInt(input);
-    }
-
-    /**
-     * Функция получения списка целочисленных параметров из строки цифр, разделенных пробелами.
-     * @param input     Входная строка с цифровыми параметрами.
-     * @param numberOfParams    Количество параметров в строке.
-     * @return  Целочисленный массив с параметрами, полученными из входной строки.
-     */
-    static int[] GetParamsVector(String input, int numberOfParams) {
-        int[] res = new int[numberOfParams];
-        StringTokenizer tokenizer = new StringTokenizer(input);
-
-        for (int i=0; i< numberOfParams; i++){
-            String value = tokenizer.nextToken();
-            res[i] = GetParamScalar(value, false);
-        }
-        return res;
-    }
-}
 
 /**
  * Основной класс решения.
@@ -156,7 +109,7 @@ public class FinalSolutionA {
      */
     public static String CalculateDistance(String[] input){
         int   sequenceLength  = Integer.parseInt(input[0]);
-        int[] sequenceData    = YUtils.GetParamsVector(input[1], sequenceLength);
+        int[] sequenceData    = YUtils.getParamsVector(input[1], sequenceLength);
         int[] zeroIdxSequence = GetZeroIndexes(sequenceData);
 
         StringJoiner stringJoiner = new StringJoiner(" ","","");
@@ -172,7 +125,7 @@ public class FinalSolutionA {
 
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println(CalculateDistance(YUtils.GetFromConsole(reader, 2)));
+        System.out.println(CalculateDistance(YUtils.getFromConsole(reader, 2)));
     }
 
 }
