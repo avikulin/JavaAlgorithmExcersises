@@ -6,9 +6,6 @@ package FinalA;
 import YTester.YTestCase;
 import YTester.YTestRunner;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class RunTests {
     public static void main(String[] args) {
         YTestRunner<String, String[]> tr = new YTestRunner<String, String[]>(
@@ -141,10 +138,13 @@ public class RunTests {
                         "push_back 2",
                         "pop_front",
                         "pop_front",
+                        "push_back 1",
+                        "pop_front",
                 },
                 "1\n" +
                             "2\n" +
-                            "error\n")
+                            "error\n"+
+                            "1\n")
         );
 
         tr.append(new YTestCase<String, String[]>(
@@ -155,11 +155,136 @@ public class RunTests {
                         "pop_back",
                         "push_front 2",
                         "pop_back",
-                        "pop_back"
+                        "pop_back",
+                        "push_front 1",
+                        "pop_back",
                 },
                 "1\n" +
                         "2\n" +
-                        "error\n")
+                        "error\n"+
+                        "1\n")
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                "PUSH-POP-FRONT",
+                new String[]{"5",
+                        "2",
+                        "push_front 1",
+                        "push_front 2",
+                        "pop_front",
+                        "pop_front"
+                },
+                "2\n" +
+                            "1\n")
+        );
+
+
+        tr.append(new YTestCase<String, String[]>(
+                "CIRCULAR-1",
+                new String[]{"8",
+                        "4",
+                        "push_front 1",
+                        "push_back 2",
+                        "push_back 3",
+                        "push_back 4",
+                        "pop_front",
+                        "pop_front",
+                        "pop_front",
+                        "pop_front"
+                },
+                "1\n" +
+                            "2\n" +
+                            "3\n" +
+                            "4\n")
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                "CIRCULAR-2",
+                new String[]{"8",
+                        "4",
+                        "push_front 2",
+                        "push_front 1",
+                        "push_back 3",
+                        "push_back 4",
+                        "pop_back",
+                        "pop_back",
+                        "pop_back",
+                        "pop_back"
+                },
+                "4\n" +
+                        "3\n" +
+                        "2\n" +
+                        "1\n")
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                "CIRCULAR-3",
+                new String[]{"8",
+                        "4",
+                        "push_front 1",
+                        "push_back 2",
+                        "push_back 3",
+                        "push_back 4",
+                        "pop_back",
+                        "pop_back",
+                        "pop_back",
+                        "pop_back"
+                },
+                "4\n" +
+                        "3\n" +
+                        "2\n" +
+                        "1\n")
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                "CIRCULAR-4",
+                new String[]{"6",
+                        "4",
+                        "push_back 111",
+                        "push_front 861",
+                        "pop_back",
+                        "pop_back",
+                        "push_front 555",
+                        "pop_back"
+                },
+                "111\n"+
+                        "861\n"+
+                        "555\n")
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                "CIRCULAR-5",
+                new String[]{"6",
+                        "4",
+                        "push_front 111",
+                        "push_back 861",
+                        "pop_front",
+                        "pop_front",
+                        "push_back 555",
+                        "pop_front"
+                },
+                "111\n"+
+                            "861\n"+
+                            "555\n")
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                "CRUSH_TEST-1",
+                new String[]{"1",
+                        "1000",
+                        "pop_back"
+                },
+                "error\n")
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                "CRUSH_TEST-2",
+                new String[]{"2",
+                        "3",
+                        "push_front -1000",
+                        "pop_back"
+                },
+                "-1000\n")
         );
 
         // run all tests & print results to console
