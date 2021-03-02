@@ -5,116 +5,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.*;
+import java.util.function.Function;
 
-/* Специализированные функциональные интерфейсы с поддержкой исключений, необходимых для бизнес-логики интерпретатора */
-interface IConsumerFunction{
-    void accept(Integer value) throws WriteOverflowException;
-}
-
-interface ISupplierFunction{
-    Integer get() throws ReadEmptyQueueException;
-}
-
-/* Специализированные классы исключений, которые используются в бизнес-логике */
-
-class WriteOverflowException extends Exception {
-    WriteOverflowException(String errorMessage) {
-        super(errorMessage);
-    }
-}
-
-class ReadEmptyQueueException extends Exception {
-    ReadEmptyQueueException(String errorMessage) {
-        super(errorMessage);
-    }
-}
-
-/* Глобальные параметры  */
-enum FuncType {CONSUMER, SUPPLIER}
-enum AccessType{FRONT, BACK}
 
 class GlobalSettings {
     public static final String CMD_PUSH_FRONT = "push_front";
     public static final String CMD_POP_FRONT = "pop_front";
     public static final String CMD_PUSH_BACK = "push_back";
     public static final String CMD_POP_BACK = "pop_back";
+    public static final String ERR_MESSAGE = "error";
 }
 
-/* Рализация основных классов интерпретатора команд */
-class CommandFunctor {
-    private IConsumerFunction refPushFrontCommand;
-    private IConsumerFunction refPushBackCommand;
-    private ISupplierFunction refPopFrontCommand;
-    private ISupplierFunction refPopBackCommand;
-    private final FuncType type;
-    private AccessType direction;
-
-    CommandFunctor(IConsumerFunction refCmdFunction, AccessType accessDirection) {
-        type = FuncType.CONSUMER;
-        direction = accessDirection;
-        if (direction == AccessType.FRONT){
-            refPushFrontCommand = refCmdFunction;
-        } else {
-            refPushBackCommand = refCmdFunction;
-        }
-    }
-
-    CommandFunctor(ISupplierFunction refCmdFunction, AccessType accessDirection) {
-        type = FuncType.SUPPLIER;
-        direction = accessDirection;
-        if (direction == AccessType.FRONT){
-            refPopFrontCommand = refCmdFunction;
-        } else {
-            refPopBackCommand = refCmdFunction;
-        }
-    }
-
-    FuncType getType() {
-        return type;
-    }
-
-    AccessType getDirection() {
-        return direction;
-    }
-
-    public String invokeAsConsumer(Integer inputValue) throws InvalidAlgorithmParameterException {
-        if (type != FuncType.CONSUMER)
-            throw new InvalidAlgorithmParameterException("Functor can't operate as consumer");
-
-        try {
-            if (direction == AccessType.FRONT){
-                refPushFrontCommand.accept(inputValue);
-            } else {
-                refPushBackCommand.accept(inputValue);
-            }
-        } catch (WriteOverflowException ex) {
-            return "error";
-        }
-        return new String();
-    }
-
-    public String invokeAsSupplier() throws InvalidAlgorithmParameterException {
-        if (type != FuncType.SUPPLIER)
-            throw new InvalidAlgorithmParameterException("Functor can't operate as consumer");
-        Integer res;
-        try {
-            if (direction == AccessType.FRONT){
-               res = refPopFrontCommand.get();
-            } else {
-                res = refPopBackCommand.get();
-            }
-        } catch (ReadEmptyQueueException ex) {
-            return "error";
-        }
-        return res.toString();
-    }
-}
 
 class Commander {
-    private final HashMap<String, CommandFunctor> mapping;
+    private final HashMap<String, Function<Integer, String>> mapping;
 
-    Commander(CommandFunctor funcPushFront, CommandFunctor funcRefPushBack,
-              CommandFunctor funcPopFront, CommandFunctor funcRefPopBack) {
+    Commander(Function<Integer, String> funcPushFront, Function<Integer, String> funcRefPushBack,
+              Function<Integer, String> funcPopFront, Function<Integer, String> funcRefPopBack) {
         mapping = new HashMap<>();
         mapping.put(GlobalSettings.CMD_PUSH_FRONT, funcPushFront);
         mapping.put(GlobalSettings.CMD_PUSH_BACK, funcRefPushBack);
@@ -122,13 +29,9 @@ class Commander {
         mapping.put(GlobalSettings.CMD_POP_BACK, funcRefPopBack);
     }
 
-    public String Interpret(String commandName, Integer parameterValue) throws InvalidAlgorithmParameterException {
-        CommandFunctor functor = mapping.get(commandName);
-        if (functor.getType() == FuncType.CONSUMER) {
-            return functor.invokeAsConsumer(parameterValue);
-        } else {
-            return functor.invokeAsSupplier();
-        }
+    public String Interpret(String commandName, Integer parameterValue){
+        Function<Integer, String> funcRef = mapping.get(commandName);
+        return funcRef.apply(parameterValue);
     }
 }
 
@@ -162,44 +65,46 @@ class Deque {
 
     public boolean isEmpty(){return fillCounter == 0;}
 
-    public void pushBack(Integer value) throws WriteOverflowException {
+    public String pushBack(Integer value){
         int writePosition = tailPointer;
         if (fillCounter > 0)
             writePosition = normalizePosition(++writePosition);
         if (fillCounter == storageSize)
-            throw new WriteOverflowException("Attempting to write beyond the bounds of the storage area");
+            return GlobalSettings.ERR_MESSAGE;
         storage[writePosition] = value;
         tailPointer = writePosition;
         fillCounter++;
+        return new String();
     }
 
-    public void pushFront(Integer value) throws WriteOverflowException {
+    public String pushFront(Integer value){
         int writePosition = headPointer;
         if (fillCounter > 0)
             writePosition = normalizePosition(--writePosition);
         if (fillCounter == storageSize)
-            throw new WriteOverflowException("Attempting to write beyond the bounds of the storage area");
+            return GlobalSettings.ERR_MESSAGE;
         storage[writePosition] = value;
         headPointer = writePosition;
         fillCounter++;
+        return new String();
     }
 
-    public Integer popBack() throws ReadEmptyQueueException {
+    public String popBack(Integer emptyParam){
         int readPosition = tailPointer;
-        if (isEmpty()) throw new ReadEmptyQueueException("Attempting to read from empty storage");
+        if (isEmpty()) return GlobalSettings.ERR_MESSAGE;
         Integer value = storage[readPosition];
         tailPointer = normalizePosition(--readPosition);
         --fillCounter;
-        return value;
+        return value.toString();
     }
 
-    public Integer popFront() throws ReadEmptyQueueException {
+    public String popFront(Integer emptyParam){
         int readPosition = headPointer;
-        if (isEmpty()) throw new ReadEmptyQueueException("Attempting to read from empty storage");
+        if (isEmpty()) return GlobalSettings.ERR_MESSAGE;
         Integer value = storage[readPosition];
         headPointer = normalizePosition(++readPosition);
         --fillCounter;
-        return value;
+        return value.toString();
     }
 }
 
@@ -207,29 +112,26 @@ class Deque {
 /* Управляющий класс, реализующий запуск и выполнение бизнес-логики задания */
 public class FinalSolutionA {
 
-    public static List<String> ProcessCommands(String[] commandsToProcess)  {
+    public static String ProcessCommands(String[] commandsToProcess)  {
         int dequeueSize = Integer.parseInt(commandsToProcess[1]);
         Deque deque = new Deque(dequeueSize);
 
-        Commander cmd = new Commander(new CommandFunctor(deque::pushFront, AccessType.FRONT),
-                                      new CommandFunctor(deque::pushBack, AccessType.BACK),
-                                      new CommandFunctor(deque::popFront, AccessType.FRONT),
-                                      new CommandFunctor(deque::popBack, AccessType.BACK));
-        List<String> outBuffer = new ArrayList<>();
+        Commander cmd = new Commander(deque::pushFront, deque::pushBack, deque::popFront, deque::popBack);
+        StringBuilder outLog = new StringBuilder();
+
         for (int i = 2; i < commandsToProcess.length; i++) {
             String[] commandTokens = commandsToProcess[i].split(" ");
             String commandName = commandTokens[0];
             Integer commandValue = commandTokens.length > 1? Integer.parseInt(commandTokens[1]):0;
-            try{
-                String cmdResult = cmd.Interpret(commandName, commandValue);
-                if (!cmdResult.isEmpty()) {
-                    outBuffer.add(cmdResult);
-                }
-            }catch (InvalidAlgorithmParameterException ex){
-                // Можно было бы сделать обработчик, но его не к чему ни прикрутить.
+
+            String cmdResult = cmd.Interpret(commandName, commandValue);
+            if (!cmdResult.isEmpty()) {
+                outLog.append(cmdResult);
+                outLog.append("\n");
             }
+
         }
-        return outBuffer;
+        return outLog.toString();
     }
 
     public static void main(String[] args) throws IOException, InvalidAlgorithmParameterException {
@@ -243,7 +145,6 @@ public class FinalSolutionA {
             inputDataSet[i] = reader.readLine();
         }
 
-        List<String> res = ProcessCommands(inputDataSet);
-        System.out.println(String.join("\n", res));
+        System.out.println(ProcessCommands(inputDataSet));
     }
 }
