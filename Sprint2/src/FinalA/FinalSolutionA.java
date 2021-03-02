@@ -3,7 +3,17 @@ package FinalA; // эту строку нужно закомментироват
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.InvalidAlgorithmParameterException;
 import java.util.*;
+
+/* Специализированные функциональные интерфейсы с поддержкой исключений, необходимых для бизнес-логики интерпретатора */
+interface IConsumerFunction{
+    void accept(Integer value) throws WriteOverflowException;
+}
+
+interface ISupplierFunction{
+    Integer get() throws ReadEmptyQueueException;
+}
 
 /* Специализированные классы исключений, которые используются в бизнес-логике */
 
@@ -19,23 +29,9 @@ class ReadEmptyQueueException extends Exception {
     }
 }
 
-/* Базовые интерфейсы функционального полиморфизма, используемого интерпретатором команд */
-
-interface IBaseFunction {
-}
-
-@FunctionalInterface
-interface IConsumerFunction<T> extends IBaseFunction {
-    void invoke(T param) throws WriteOverflowException;
-}
-
-@FunctionalInterface
-interface IProducerFunction<T> extends IBaseFunction {
-    T invoke() throws ReadEmptyQueueException;
-}
-
 /* Глобальные параметры  */
-enum FuncType {CONSUMER, PRODUCER}
+enum FuncType {CONSUMER, SUPPLIER}
+enum AccessType{FRONT, BACK}
 
 class GlobalSettings {
     public static final String CMD_PUSH_FRONT = "push_front";
@@ -45,91 +41,94 @@ class GlobalSettings {
 }
 
 /* Рализация основных классов интерпретатора команд */
-class CommandFunctor<T> {
+class CommandFunctor {
+    private IConsumerFunction refPushFrontCommand;
+    private IConsumerFunction refPushBackCommand;
+    private ISupplierFunction refPopFrontCommand;
+    private ISupplierFunction refPopBackCommand;
     private final FuncType type;
-    private final IBaseFunction reference;
+    private AccessType direction;
 
-    CommandFunctor(FuncType funcType, IBaseFunction funcReference) {
-        type = funcType;
-        reference = funcReference;
+    CommandFunctor(IConsumerFunction refCmdFunction, AccessType accessDirection) {
+        type = FuncType.CONSUMER;
+        direction = accessDirection;
+        if (direction == AccessType.FRONT){
+            refPushFrontCommand = refCmdFunction;
+        } else {
+            refPushBackCommand = refCmdFunction;
+        }
+    }
+
+    CommandFunctor(ISupplierFunction refCmdFunction, AccessType accessDirection) {
+        type = FuncType.SUPPLIER;
+        direction = accessDirection;
+        if (direction == AccessType.FRONT){
+            refPopFrontCommand = refCmdFunction;
+        } else {
+            refPopBackCommand = refCmdFunction;
+        }
     }
 
     FuncType getType() {
         return type;
     }
 
-    IProducerFunction<T> asProducer() {
-        if (type != FuncType.PRODUCER) {
-            throw new ClassCastException("invalid casting the function as a producer");
+    AccessType getDirection() {
+        return direction;
+    }
+
+    public String invokeAsConsumer(Integer inputValue) throws InvalidAlgorithmParameterException {
+        if (type != FuncType.CONSUMER)
+            throw new InvalidAlgorithmParameterException("Functor can't operate as consumer");
+
+        try {
+            if (direction == AccessType.FRONT){
+                refPushFrontCommand.accept(inputValue);
+            } else {
+                refPushBackCommand.accept(inputValue);
+            }
+        } catch (WriteOverflowException ex) {
+            return "error";
         }
-        return (IProducerFunction<T>) reference;
+        return new String();
     }
 
-    IConsumerFunction<T> asConsumer() {
-        if (type != FuncType.CONSUMER) {
-            throw new ClassCastException("invalid casting as consumer function");
+    public String invokeAsSupplier() throws InvalidAlgorithmParameterException {
+        if (type != FuncType.SUPPLIER)
+            throw new InvalidAlgorithmParameterException("Functor can't operate as consumer");
+        Integer res;
+        try {
+            if (direction == AccessType.FRONT){
+               res = refPopFrontCommand.get();
+            } else {
+                res = refPopBackCommand.get();
+            }
+        } catch (ReadEmptyQueueException ex) {
+            return "error";
         }
-        return (IConsumerFunction<T>) reference;
-    }
-}
-
-class CommandMapper<T> {
-    private final IConsumerFunction<T> refPushFront;
-    private final IConsumerFunction<T> refPushBack;
-    private final IProducerFunction<T> refPopFront;
-    private final IProducerFunction<T> refPopBack;
-
-    CommandMapper(IConsumerFunction<T> funcPushFront,
-                  IConsumerFunction<T> funcRefPushBack,
-                  IProducerFunction<T> funcPopFront,
-                  IProducerFunction<T> funcRefPopBack) {
-        refPushFront = funcPushFront;
-        refPushBack = funcRefPushBack;
-        refPopFront = funcPopFront;
-        refPopBack = funcRefPopBack;
-    }
-
-    public HashMap<String, CommandFunctor<T>> BuildMapping() {
-        HashMap<String, CommandFunctor<T>> res = new HashMap<>();
-        res.put(GlobalSettings.CMD_PUSH_FRONT, new CommandFunctor<>(FuncType.CONSUMER, refPushFront));
-        res.put(GlobalSettings.CMD_PUSH_BACK, new CommandFunctor<>(FuncType.CONSUMER, refPushBack));
-        res.put(GlobalSettings.CMD_POP_FRONT, new CommandFunctor<>(FuncType.PRODUCER, refPopFront));
-        res.put(GlobalSettings.CMD_POP_BACK, new CommandFunctor<>(FuncType.PRODUCER, refPopBack));
-        return res;
+        return res.toString();
     }
 }
 
 class Commander {
-    private final HashMap<String, CommandFunctor<Integer>> mapping;
+    private final HashMap<String, CommandFunctor> mapping;
 
-    Commander(CommandMapper<Integer> mapper) {
-        mapping = mapper.BuildMapping();
+    Commander(CommandFunctor funcPushFront, CommandFunctor funcRefPushBack,
+              CommandFunctor funcPopFront, CommandFunctor funcRefPopBack) {
+        mapping = new HashMap<>();
+        mapping.put(GlobalSettings.CMD_PUSH_FRONT, funcPushFront);
+        mapping.put(GlobalSettings.CMD_PUSH_BACK, funcRefPushBack);
+        mapping.put(GlobalSettings.CMD_POP_FRONT, funcPopFront);
+        mapping.put(GlobalSettings.CMD_POP_BACK, funcRefPopBack);
     }
 
-    public String Interpret(String commandWithParameter) {
-        StringTokenizer tokenizer = new StringTokenizer(commandWithParameter);
-        String commandName = tokenizer.nextToken();
-
-        CommandFunctor<Integer> functor = mapping.get(commandName);
-        StringBuilder stringBuilder = new StringBuilder();
-
+    public String Interpret(String commandName, Integer parameterValue) throws InvalidAlgorithmParameterException {
+        CommandFunctor functor = mapping.get(commandName);
         if (functor.getType() == FuncType.CONSUMER) {
-            try {
-                int commandValue = Integer.parseInt(tokenizer.nextToken());
-                functor.asConsumer().invoke(commandValue);
-            } catch (WriteOverflowException ex) {
-                stringBuilder.append("error");
-            }
+            return functor.invokeAsConsumer(parameterValue);
+        } else {
+            return functor.invokeAsSupplier();
         }
-
-        if (functor.getType() == FuncType.PRODUCER) {
-            try {
-                stringBuilder.append(functor.asProducer().invoke());
-            } catch (ReadEmptyQueueException ex) {
-                stringBuilder.append("error");
-            }
-        }
-        return stringBuilder.toString();
     }
 }
 
@@ -208,26 +207,32 @@ class Deque {
 /* Управляющий класс, реализующий запуск и выполнение бизнес-логики задания */
 public class FinalSolutionA {
 
-    public static List<String> ProcessCommands(String[] commandsToProcess) {
+    public static List<String> ProcessCommands(String[] commandsToProcess)  {
         int dequeueSize = Integer.parseInt(commandsToProcess[1]);
         Deque deque = new Deque(dequeueSize);
-        CommandMapper<Integer> mapper = new CommandMapper<>(deque::pushFront,
-                                                            deque::pushBack,
-                                                            deque::popFront,
-                                                            deque::popBack);
 
-        Commander cmd = new Commander(mapper);
+        Commander cmd = new Commander(new CommandFunctor(deque::pushFront, AccessType.FRONT),
+                                      new CommandFunctor(deque::pushBack, AccessType.BACK),
+                                      new CommandFunctor(deque::popFront, AccessType.FRONT),
+                                      new CommandFunctor(deque::popBack, AccessType.BACK));
         List<String> outBuffer = new ArrayList<>();
         for (int i = 2; i < commandsToProcess.length; i++) {
-            String cmdResult = cmd.Interpret(commandsToProcess[i]);
-            if (!cmdResult.isEmpty()) {
-                outBuffer.add(cmdResult);
+            String[] commandTokens = commandsToProcess[i].split(" ");
+            String commandName = commandTokens[0];
+            Integer commandValue = commandTokens.length > 1? Integer.parseInt(commandTokens[1]):0;
+            try{
+                String cmdResult = cmd.Interpret(commandName, commandValue);
+                if (!cmdResult.isEmpty()) {
+                    outBuffer.add(cmdResult);
+                }
+            }catch (InvalidAlgorithmParameterException ex){
+                // Можно было бы сделать обработчик, но его не к чему ни прикрутить.
             }
         }
         return outBuffer;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InvalidAlgorithmParameterException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String firstString = reader.readLine();
         int numberOfCommands = Integer.parseInt(firstString);
