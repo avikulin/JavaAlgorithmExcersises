@@ -12,7 +12,7 @@ public class SolutionA {
         base = base % modulo;
         long res = str.charAt(0);
         for (int i = 1; i < str.length(); i++) {
-            res = ((int) str.charAt(i) % modulo + (((res % modulo) * base) % modulo)) % modulo;
+            res = ((int) str.charAt(i) % modulo + ((res * base) % modulo)) % modulo;
         }
 
         return res;
