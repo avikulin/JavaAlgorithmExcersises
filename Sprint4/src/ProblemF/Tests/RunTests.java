@@ -1,0 +1,108 @@
+// import testable class
+package ProblemF.Tests;
+
+// import test utilities
+import ProblemF.SolutionF;
+import YTester.YTestCase;
+import YTester.YTestRunner;
+
+public class RunTests {
+    public static void main(String[] args) {
+        YTestRunner<String, String[]> tr = new YTestRunner<String, String[]>(
+                SolutionF::groupAnagrams,
+                String::equals,
+                i -> i,
+                200);
+
+        // add test case definitions
+
+        tr.append(new YTestCase<String, String[]>(
+                        "EXAMPLE-1",
+                        new String[]{"6",
+                                     "tan eat tea ate nat bat"},
+                        "0 4\n" +
+                                    "1 2 3\n" +
+                                    "5"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "EMPTY-1",
+                        new String[]{"0",
+                                     ""},
+                        ""
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "ONE-1",
+                        new String[]{"1",
+                                     "one"},
+                        "0"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "ONE-2",
+                        new String[]{"2",
+                                     "one one"},
+                        "0 1"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "ONE-3",
+                        new String[]{"2",
+                                     "one eno"},
+                        "0 1"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "ONE-TWO-1",
+                        new String[]{"2",
+                                "one two"},
+                        "0\n" +
+                                    "1"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "DIFF-1",
+                        new String[]{"5",
+                                "one two three four five"},
+                        "0\n" +
+                                    "1\n" +
+                                    "2\n"+
+                                    "3\n"+
+                                    "4"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "SORT-1",
+                        new String[]{"8",
+                                "abc tan eat bac tea ate nat bat"},
+                        "0 3\n" +
+                                    "1 6\n" +
+                                    "2 4 5\n" +
+                                    "7"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "BIG-1",
+                        new String[]{"2",
+                                        "dasdasdasdasddfdvcvxcvqwzyzyzyzyzyzyeweweqweqweqwew" +
+                                        "eqweqwewewqewerererewrererexxxxxxxxxxxxxxxxxxxzz " +
+                                        "dasdqwewewqewerererewrererexxxxxxxxxxxxxxxxxxxzz" +
+                                        "asdasdasddfdvcvxcvqwzyzyzyzyzyzyeweweqweqweqweweqwe"},
+                        "0 1"
+                )
+        );
+
+
+        // run all tests & print results to console
+        tr.run();
+    }
+}
