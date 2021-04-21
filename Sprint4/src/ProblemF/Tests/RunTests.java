@@ -139,6 +139,23 @@ public class RunTests {
                 )
         );
 
+        tr.append(new YTestCase<String, String[]>(
+                        "SAME-1",
+                        new String[]{"6",
+                                     "a b a b a b"},
+                        "0 2 4\n" +
+                                    "1 3 5"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "SAME-2",
+                        new String[]{"3",
+                                "a a a"},
+                        "0 1 2"
+                )
+        );
+
         // run all tests & print results to console
         tr.run();
     }
