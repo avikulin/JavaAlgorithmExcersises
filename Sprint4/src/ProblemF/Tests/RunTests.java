@@ -140,6 +140,37 @@ public class RunTests {
         );
 
         tr.append(new YTestCase<String, String[]>(
+                        "BIG-3",
+                        new String[]{"12",
+                                     "abc zxy xyz  yxz cab bca zyx bac cba bac xzy yzx"},
+                        "0 4 5 7 8 9\n" +
+                                     "1 2 3 6 10 11"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "BIG-4",
+                        new String[]{"12",
+                                "xzy yzx abc zxy cba bac xyz  yxz cab bca zyx bac"},
+                        "0 1 3 6 7 10\n" +
+                                "2 4 5 8 9 11"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "BIG-5",
+                        new String[]{"16",
+                                "abc zxy xyz  ffff yxz cab bca gggg zyx bac cba ff bac xzy yzx ggg"},
+                        "0 5 6 9 10 12\n" +
+                                "1 2 4 8 13 14\n" +
+                                "3\n" +
+                                "7\n" +
+                                "11\n" +
+                                "15"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
                         "SAME-1",
                         new String[]{"6",
                                      "a b a b a b"},
