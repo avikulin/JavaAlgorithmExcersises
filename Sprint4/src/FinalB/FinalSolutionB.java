@@ -121,6 +121,7 @@ class HashTable {
 
         /**
          * Конструктор хранимого элемента
+         *
          * @param hashKey   Ключ.
          * @param hashValue Значение.
          */
@@ -132,8 +133,9 @@ class HashTable {
         /**
          * Реализая интерфейса сравнения на равенство (унаследовано от Object).
          * Требуется для поиска нужного элемента ссылке.
-         * @param otherObj  Ссылка на сравниваемый элемент
-         * @return  true - если элементы равны, false - в противном случае.
+         *
+         * @param otherObj Ссылка на сравниваемый элемент
+         * @return true - если элементы равны, false - в противном случае.
          */
         @Override
         public boolean equals(Object otherObj) {
@@ -157,8 +159,9 @@ class HashTable {
 
         /**
          * Поиск элемента в цепочке по заданному ключу.
-         * @param key   Значение искомого ключа элемента.
-         * @return  Ссылка на хранимый в цепочке элемент (или null, если элемент не найден).
+         *
+         * @param key Значение искомого ключа элемента.
+         * @return Ссылка на хранимый в цепочке элемент (или null, если элемент не найден).
          */
         private HashPair findReference(int key) {
             Iterator<HashPair> pairsIterator = hashPairsStorage.iterator();
@@ -171,8 +174,9 @@ class HashTable {
 
         /**
          * Получение значения элемента по ключу.
-         * @param key   Значение искомого ключа элемента.
-         * @return  Значение элемента с заданным ключом (или -1, если элемент не найден).
+         *
+         * @param key Значение искомого ключа элемента.
+         * @return Значение элемента с заданным ключом (или -1, если элемент не найден).
          */
         public int getValue(int key) {
             HashPair res = findReference(key);
@@ -181,6 +185,7 @@ class HashTable {
 
         /**
          * Добавление элемента в цепочку.
+         *
          * @param element Ссылка на добавляемый элемент.
          */
         public void putValue(HashPair element) {
@@ -194,8 +199,9 @@ class HashTable {
 
         /**
          * Удаление элемента из цепочки по значению ключа.
+         *
          * @param key Ключ удаляемого элемента.
-         * @return  Значение удаляемого элемента на момент удаления (или -1, если элемент не найден).
+         * @return Значение удаляемого элемента на момент удаления (или -1, если элемент не найден).
          */
         public int deleteValue(int key) {
             HashPair element = findReference(key);
@@ -209,7 +215,8 @@ class HashTable {
 
     /**
      * Конструктор основного класса хэш-таблицы
-     * @param size  Начальное (фиксированное) количество цепочек элементов (buckets).
+     *
+     * @param size Начальное (фиксированное) количество цепочек элементов (buckets).
      */
     HashTable(int size) {
         hashBucketsStorage = new HashBucket[size];
@@ -217,8 +224,9 @@ class HashTable {
 
     /**
      * Вычисление номера цепочки элементов (bucket) по значению ключа.
-     * @param key   Значение ключа элемента.
-     * @return  Номер цепочки элементов.
+     *
+     * @param key Значение ключа элемента.
+     * @return Номер цепочки элементов.
      */
     private int computeBucketIdx(int key) {
         return key % hashBucketsStorage.length;
@@ -226,8 +234,9 @@ class HashTable {
 
     /**
      * Получение значения элемента по ключу.
-     * @param key   Ключ искомого элемента.
-     * @return  Значение элемента в текстовой форме (или "None", если элемент не найден)
+     *
+     * @param key Ключ искомого элемента.
+     * @return Значение элемента в текстовой форме (или "None", если элемент не найден)
      */
     public String getElement(int key) {
         int idx = computeBucketIdx(key);
@@ -238,6 +247,7 @@ class HashTable {
 
     /**
      * Добавление элемента в хэш-таблицу.
+     *
      * @param key   Ключ добавляемого элемента.
      * @param value Значение добавляемого элемента.
      */
@@ -252,8 +262,9 @@ class HashTable {
 
     /**
      * Удаление элемента по ключу.
-     * @param key   Ключ удаляемого элемента.
-     * @return  Значение элемента в текстовом виде на момент удаления (или "None", если элемент не найден)
+     *
+     * @param key Ключ удаляемого элемента.
+     * @return Значение элемента в текстовом виде на момент удаления (или "None", если элемент не найден)
      */
     public String deleteElement(int key) {
         int idx = computeBucketIdx(key);
@@ -276,7 +287,8 @@ class Commander {
 
     /**
      * Конструктор класса интерпретатора.
-     * @param objRef    Ссылка на управляемый экземпляр хэш-таблицы.
+     *
+     * @param objRef Ссылка на управляемый экземпляр хэш-таблицы.
      */
     Commander(HashTable objRef) {
         cmdObject = objRef;
@@ -284,7 +296,8 @@ class Commander {
 
     /**
      * Выполнение команды по ее текстовому представлению (вкл. извлечение параметров).
-     * @param parameters    Текстовое представление команды с набором параметров.
+     *
+     * @param parameters Текстовое представление команды с набором параметров.
      * @return Текстовое представление результата выполнения команды.
      */
     public String interpret(String parameters) {
@@ -296,7 +309,7 @@ class Commander {
                 return cmdObject.getElement(Integer.parseInt(tokenizer.nextToken()));
             case PUT_CMD:
                 cmdObject.putElement(Integer.parseInt(tokenizer.nextToken()),
-                                     Integer.parseInt(tokenizer.nextToken()));
+                        Integer.parseInt(tokenizer.nextToken()));
                 return ""; //текстовый аналог void
             case DEL_CMD:
                 return cmdObject.deleteElement(Integer.parseInt(tokenizer.nextToken()));
@@ -314,8 +327,9 @@ public class FinalSolutionB {
 
     /**
      * Функция обработки массива входных параметров.
+     *
      * @param input Массив входных команд с параметрами.
-     * @return  Текстовое представление совокупного результата выполнения набора переданных команд.
+     * @return Текстовое представление совокупного результата выполнения набора переданных команд.
      */
     public static String processRequests(String[] input) {
         HashTable hashTable = new HashTable(NUMBER_OF_BUCKETS);
@@ -335,7 +349,8 @@ public class FinalSolutionB {
 
     /**
      * Точка входа в программу.
-     * @param args  Аргументы командной строки (для целей совместимости).
+     *
+     * @param args Аргументы командной строки (для целей совместимости).
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
