@@ -3,10 +3,7 @@ package FinalB;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.StringTokenizer;
+import java.util.*;
 
 class HashTable {
     private final int NOT_FOUND = -1;
@@ -20,40 +17,53 @@ class HashTable {
             key = hashKey;
             value = hashValue;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            HashPair hashPair = (HashPair) o;
+            return key == hashPair.key &&
+                    value == hashPair.value;
+        }
     }
 
     class HashBucket {
         private final List<HashPair> hashPairsStorage;
 
-        private int findIndex(int key) {
-            for (int i = 0; i < hashPairsStorage.size(); i++)
-                if (hashPairsStorage.get(i).key == key) return i;
-
-            return NOT_FOUND;
-        }
-
         HashBucket() {
             hashPairsStorage = new LinkedList<>();
         }
-
-        public int getValue(int key) {
-            for (int i = 0; i < hashPairsStorage.size(); i++) {
-                HashPair element = hashPairsStorage.get(i);
-                if (key == element.key)
-                    return element.value;
+        private HashPair findReference(int key) {
+            Iterator<HashPair> pairsIterator = hashPairsStorage.iterator();
+            while (pairsIterator.hasNext()) {
+                HashPair kv = pairsIterator.next();
+                if (key == kv.key) return kv;
             }
-            return NOT_FOUND;
+            return null;
         }
 
-        public void putValue(HashPair value) {
-            hashPairsStorage.add(value);
+        public int getValue(int key) {
+            HashPair res = findReference(key);
+            return (res == null) ? NOT_FOUND : res.value;
+        }
+
+        public void putValue(HashPair element) {
+            HashPair kv = findReference(element.key);
+
+            if (kv == null)
+                hashPairsStorage.add(element);
+            else
+                kv.value = element.value;
         }
 
         public int deleteValue(int key) {
-            int idx = findIndex(key);
-            if (idx == NOT_FOUND) return NOT_FOUND;
-            HashPair element = hashPairsStorage.remove(idx);
-            return element.value;
+            HashPair element = findReference(key);
+            if (element == null) return NOT_FOUND;
+
+            int previousValue = element.value;
+            hashPairsStorage.remove(element);
+            return previousValue;
         }
     }
 
@@ -149,7 +159,7 @@ public class FinalSolutionB {
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         int numOfRequests = Integer.parseInt(reader.readLine());
-        String[] buffer = new String[numOfRequests];
+        String[] buffer = new String[numOfRequests + 1];
 
         buffer[0] = String.valueOf(numOfRequests);
         for (int i = 1; i < numOfRequests + 1; i++)

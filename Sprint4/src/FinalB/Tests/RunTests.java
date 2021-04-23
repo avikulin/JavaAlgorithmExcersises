@@ -35,7 +35,7 @@ public class RunTests {
                                     "4\n" +
                                     "None\n" +
                                     "5\n" +
-                                    "None\n"
+                                    "None"
                 )
         );
 
@@ -54,7 +54,31 @@ public class RunTests {
                                     "None\n" +
                                     "1\n" +
                                     "2\n" +
-                                    "3\n"
+                                    "3"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "EMPTY-1",
+                        new String[]{"2",
+                                "get 9",
+                                "delete 9"},
+                    "None\n" +
+                                "None"
+                )
+        );
+
+        tr.append(new YTestCase<String, String[]>(
+                        "COLLISION-1",
+                        new String[]{"5",
+                                "put 3 5",
+                                "get 3",
+                                "put 33202 10",
+                                "get 33202",
+                                "get 3"},
+                        "5\n" +
+                                "10\n" +
+                                "5"
                 )
         );
 
