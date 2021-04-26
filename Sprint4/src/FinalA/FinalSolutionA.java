@@ -1,10 +1,50 @@
-package FinalA;
+package FinalA; // эту строку нужно закомментировать перед отправкой в Яндекс.Контест.
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+/*
+        ОПИСАНИЕ РЕШЕНИЯ
+
+        Основой решения вляется класс <FullTextIndex>, который реализует функционал индексирования входных документов
+        и выполнение поиска по данному индексу с учетом критериев релевантности.
+
+        ФУнкционал данного класса состоит из следующих основных частей:
+
+        1) Построение индекса вхождения отдельных слов во фразу (частотный индекс). Функционал выполняет слеющее
+        отображение <getIndexOfOccurrences>: "buy coffee in coffee shop" -> {"buy":1, "coffee":2, "in":1, "shop":1}
+
+        Поскольку в реализации используется HashMap, то операции вставки и получения элемента осуществляются за О(1).
+        В реализации есть преобразование входной строки в массив строк, после чего выполнение reduce-функции в потоке.
+        Каждая из этих операций требует столько же дополнительной памяти, как и входная строка.
+
+        ВРЕМЕННАЯ СЛОЖНОСТЬ: O(m), где m - количество слов в документе.
+        ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ: 2*O(m*k) = O(m*k), где m - количество слов в документе, k - средняя длина слова.
+
+        2) Построение обратного индекса (<constructReverseIndex>) из индекса вхождения:
+
+            { "buy":{█}, "coffee":{█}, "in":{█}, "shop":{█} } ◀- HashMap<String, ... >
+                     ▲
+                     |
+                     |
+                     ┠────────────────────────────┐
+                     |                            ▲
+                     |                            |
+                     |   ┌--- <индекс вхождения ключа в данных документ>
+                     |   ▼
+                     { 1: 1, 2:4, 3:2 } ◀- HashMap<Integer, Integer>
+                       ▲
+                       └--- <код (порядковый номер) индексированного документа>
+
+        ВРЕМЕННАЯ СЛОЖНОСТЬ: O(n)*O(m), где m - количество слов в документе.
+        ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ: 2*O(m*k) = O(m*k), где m - количество слов в документе, k - средняя длина слова.
+
+
+ */
 class FullTextIndex {
     private Map<String, Map<Integer, Integer>> reverseIndexStore;
     private int docsCounter;
@@ -16,19 +56,14 @@ class FullTextIndex {
     }
 
     private Map<String, Integer> getIndexOfOccurrences(String str) {
-        Map<String, Integer> map = new HashMap<>();
-        StringTokenizer tokenizer = new StringTokenizer(str);
-        Integer wordOccurrenceValue = 0; //экономим время на создании и инициализации ссылочного типа
-        while (tokenizer.hasMoreTokens()) {
-            String wordOccurrenceKey = tokenizer.nextToken();
-            wordOccurrenceValue = map.get(wordOccurrenceKey); //используем Integer как nullable-тип.
-            if (wordOccurrenceValue != null) {
-                map.put(wordOccurrenceKey, ++wordOccurrenceValue);
-            } else {
-                map.put(wordOccurrenceKey, 1);
-            }
-        }
-        return map;
+        String[] wordSequence = str.split(" ");
+        return Arrays
+                .stream(wordSequence)
+                .collect(Collectors
+                        .groupingBy(Function.identity(),
+                                Collectors.
+                                        collectingAndThen(Collectors.counting(),
+                                                Long::intValue)));
     }
 
     private void constructReverseIndex(Map<String, Integer> occurrenceIdx, int docID) {
@@ -88,7 +123,8 @@ class FullTextIndex {
             }
         }
 
-        //тут важен порядок элементов - поэтому TreeMap. За сохранение порядка платим логарифмическим временем доступа.
+        //тут важен порядок элементов - поэтому TreeMap.
+        // За сохранение порядка платим логарифмическим временем доступа.
         Map<Integer, List<Integer>> relevantDocsIdx = new TreeMap<>(Collections.reverseOrder());
         reverseReflection(hitsSumRegister, relevantDocsIdx);
 
@@ -108,21 +144,6 @@ class FullTextIndex {
 }
 
 public class FinalSolutionA {
-    public static void profilingStub() {
-        while (true) {
-            processQueries(new String[]{"5",
-                    "set test", //#1
-                    "set set test test", //#2
-                    "set set set test test test", //#3
-                    "set set set set test test test test", //#4
-                    "set set set set set test test test test test", //#5
-                    "3",
-                    "set",
-                    "test",
-                    "set test"});
-        }
-    }
-
     public static String processQueries(String[] inputSequence) {
         FullTextIndex indexManager = new FullTextIndex();
         int numOfDocs = Integer.parseInt(inputSequence[0]);
@@ -141,9 +162,6 @@ public class FinalSolutionA {
     }
 
     public static void main(String[] args) throws IOException {
-
-        if (args[0].equals("profile")) profilingStub(); // заглушка для работы с профайлером (выход по Ctrl+F2).
-
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         int numOfDocs = Integer.parseInt(reader.readLine());
         String[] docBuffer = new String[numOfDocs];
