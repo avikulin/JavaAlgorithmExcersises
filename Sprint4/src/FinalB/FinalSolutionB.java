@@ -1,4 +1,4 @@
-//--- номер посылки в Яндекс.Контест = 51003681 ---//
+//--- номер посылки в Яндекс.Контест = 51219253 ---//
 
 package FinalB; // эту строку нужно закоментировать перед отправкой в Яндекс.Контест.
 
@@ -164,9 +164,7 @@ class HashTable {
          * @return Ссылка на хранимый в цепочке элемент (или null, если элемент не найден).
          */
         private HashPair findReference(int key) {
-            Iterator<HashPair> pairsIterator = hashPairsStorage.iterator();
-            while (pairsIterator.hasNext()) {
-                HashPair kv = pairsIterator.next();
+            for (HashPair kv : hashPairsStorage) {
                 if (key == kv.key) return kv;
             }
             return null;
