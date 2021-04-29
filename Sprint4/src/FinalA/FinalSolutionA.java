@@ -1,3 +1,5 @@
+//---код посылки в Яндекс.Контест - 51217979
+
 package FinalA; // эту строку нужно закомментировать перед отправкой в Яндекс.Контест.
 
 import java.io.BufferedReader;
@@ -40,10 +42,84 @@ import java.util.stream.Collectors;
                        ▲
                        └--- <код (порядковый номер) индексированного документа>
 
-        ВРЕМЕННАЯ СЛОЖНОСТЬ: O(n)*O(m), где m - количество слов в документе.
+        ВРЕМЕННАЯ СЛОЖНОСТЬ: O(n)*O(m),
+                                        где m - количество слов в документе (в HashTable вставка производится за O(1)).
+                                            n - количество добавляемых документов
         ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ: 2*O(m*k) = O(m*k), где m - количество слов в документе, k - средняя длина слова.
 
+        3) построение обратного отображения <reverseReflection>. Дання функция слудит для преобразования следующего
+        вида:
+                reverseReflection:{1:'a', 2:'б', 3:'a', 4:'б'} -> {'a':[1, 3], 'б':[2, 4]}
 
+                                получение Map.Entry<K, V> из HashMap-источника
+                                |         добавление значения в TreeMap-приемник
+                                |         |
+        ВРЕМЕННАЯ СЛОЖНОСТЬ: O(1) * n * O(log n) = O(n*log n), где n - колчисетство уникальных пар в HashMap
+        ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ: O(n) -  где n - колчисетство уникальных пар в HashMap
+
+        ОПИСАНИЕ АЛГОРИТМОВ
+
+        1) Добавление документа в индекс. Производится последовательный вызов функций:
+            а) построения индекса вхождения (<getIndexOfOccurrences>) по содержимому документа;
+            б) добавление полученного индекса входждения в общую структуру обратного индекса (<constructReverseIndex>);
+
+            ВРЕМЕННАЯ СЛОЖНОСТЬ: O(m) + O(n)*O(m) = O(mn), где m - количество слов в документe, n-количество документов.
+            ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ: O(m*k) + O(m*k) = 2 * O(mk) = O(mk), где
+                                                                                    m - количество слов в документе,
+                                                                                    k - средняя длина слова.
+        2) Поиск документа в индексе:
+            а) построение индекса вхождения по содержимому запроса
+            б) поиск вхождения в обратный индекс каждого уникального слова из запроса.
+            б) получение объединенной коллекции кортежей (<код документа>, <количество вхождений слова из запроса>).
+                Поскольку все слова из запроса принимаются с одинаковым весом, то в данной коллекции количество
+                вхождений трактуется как "количество вхождений любого слова из запроса".
+            г) построение инвертированного индекса HashMap<> -> TreeMap<> с сохранением обратного порядка ключей:
+
+                     количество вхождений любого слова из запроса в документ
+                    /         |         |          |           |
+            {<Док1>:1, <Док2>:2, <Док3>:3, <Док4>:<1>, <Док5>:<3>}->{1:[<Док1>, <Док4>], 2:[<Док2>], 3:[<Док3>, <Док5>]}
+                                                                      \                  |           |
+                                                                        индекс релевантности документа запросу
+            д) сортировка (in-place) по возрастанию и получение первых 5 элементов из инвертированного индекса.
+
+                                          получение 5 элементов из TreeMap по ключу
+                                         /
+               В в худшем случае это O(Log m) + O(n/5*log n/5) + 5 * O(1) = n*Log(n), где n - количество документов
+                                                   \                   \                      в индексе
+                                                    сортировка списка    получение документа
+                                                    документов (пятая    из списка ArrayList<>
+                                                    часть документов в
+                                                    каждом ключе)
+
+                                                            индекс вхождения
+                                                            |       получение объединенной коллекции кортежей
+                                                            |       |       построение инвертированного индекса
+                                                            |       |       |            сортировка и получение
+                                                            |       |       |            первых 5 элементов
+                                                            |       |       |           /
+                                                            |       |       |           |
+           ИТОГО ВРЕМЕННАЯ СЛОЖНОСТЬ (в худшем случае):  O(m) + m*Log(m) + m*Log(m) + O(n*log n) =
+                                                         = 2*O(m*log n) + O(n*log n) = O(n*log n), так как n>>m
+
+                                                                    индекс вхождения по словам запроса
+                                                                    |      коллекция кортежей <док>, <кол-во вхождений>)
+                                                                    |       |       /    инвертированный индекс
+                                                                    |       |       |       (1:[<Док1>, <Док4>])
+                                                                    |       |       |
+           ИТОГО ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ  (в худшем случае):  O(m*k) + O(m*n) + O(m*n) + O(1) = 2*O(m*n) = O(m*n)
+                                                                                              |                 |
+                                                                            хранение результата                 |
+                                                                                              { так как m*n >> m*k }
+
+           где  m - количество слов в запросе
+                n - колчетство документов
+                k - средняя длина слова.
+
+ */
+
+
+/**
+ * Основной класс, реализующий функционал построения индекса и обработки запросов к нему.
  */
 class FullTextIndex {
     private Map<String, Map<Integer, Integer>> reverseIndexStore;
@@ -55,6 +131,23 @@ class FullTextIndex {
         docsCounter = 0;
     }
 
+    /**
+     * Построение индекса по содержимому переданного документа.
+     *
+     * @param document Строка содержимого документа.
+     */
+    public void addDocument(String document) {
+        docsCounter++;
+        Map<String, Integer> indexOfOccurrence = getIndexOfOccurrences(document);
+        constructReverseIndex(indexOfOccurrence, docsCounter);
+    }
+
+    /**
+     * Построение индекса вхождения по уникальным словам переданной входной строки.
+     *
+     * @param str Входная строка, по которой производится индексирование.
+     * @return Структура вида {<слово>:<кол-во вхождений>}
+     */
     private Map<String, Integer> getIndexOfOccurrences(String str) {
         String[] wordSequence = str.split(" ");
         return Arrays
@@ -66,12 +159,18 @@ class FullTextIndex {
                                                 Long::intValue)));
     }
 
+    /**
+     * Построение и сохранение обратного индекса по документу.
+     *
+     * @param occurrenceIdx Структура индекса вхождения, построенного по содержимому документа.
+     * @param docID         Код индексируемого документа.
+     */
     private void constructReverseIndex(Map<String, Integer> occurrenceIdx, int docID) {
         for (Map.Entry<String, Integer> kv : occurrenceIdx.entrySet()) {
             Map<Integer, Integer> hitsRate = reverseIndexStore.get(kv.getKey());
             if (hitsRate == null) {
                 Map<Integer, Integer> newHitsRate = new HashMap<>();
-                newHitsRate.put(docID, kv.getValue());
+
                 reverseIndexStore.put(kv.getKey(), newHitsRate);
             } else {
                 hitsRate.put(docID, kv.getValue());
@@ -79,28 +178,45 @@ class FullTextIndex {
         }
     }
 
-    public void AddDocument(String document) {
-        docsCounter++;
-        Map<String, Integer> indexOfOccurrence = getIndexOfOccurrences(document);
-        constructReverseIndex(indexOfOccurrence, docsCounter);
-    }
 
+    /**
+     * Построение обратного (инвертированного) отображения структуры данных индекса:
+     * {1:'a', 2:'б', 3:'a', 4:'б'} -> {'a':[1, 3], 'б':[2, 4]}
+     *
+     * @param source      Исходный индекс {<ключ1>:<значение1>, <ключ2>:<значение1>, ...}
+     * @param destination Инвертированный индекс {<значение1>:[<ключ1>, <ключ2>, ...]}
+     */
     private void reverseReflection(Map<Integer, Integer> source, Map<Integer, List<Integer>> destination) {
         for (Map.Entry<Integer, Integer> kv : source.entrySet()) {
             int keyForReversedMap = kv.getValue();
             int valueForReversedMap = kv.getKey();
-            List<Integer> relevantDocsIdSequence = destination.get(keyForReversedMap);
-            if (relevantDocsIdSequence != null) {
-                destination.get(keyForReversedMap).add(valueForReversedMap);
-            } else {
-                List<Integer> docsIdSequence = new ArrayList<>();
-                docsIdSequence.add(valueForReversedMap);
-                destination.put(keyForReversedMap, docsIdSequence);
-            }
+            List<Integer> relevantDocsIdSequence =
+                    destination
+                            .computeIfAbsent(keyForReversedMap,
+                                    key -> {
+                                        List<Integer> lst = new ArrayList<>();
+                                        lst.add(valueForReversedMap);
+                                        return lst;
+                                    });
+
+            // проверяем за O(1), что этот список не был только что создан в блоке <computeIfAbsent>
+            boolean isJustCreated = (relevantDocsIdSequence.get(0) == valueForReversedMap)
+                    && (relevantDocsIdSequence.size() == 1);
+            if (!isJustCreated) relevantDocsIdSequence.add(valueForReversedMap);
+
+            // после удаления лишнего <.get(..)>(видимо я был в этот момент в припадке беспамятства) и рефакторинга
+            // на <.computeIfAbsent(..)> общее время выполнения сократилось 3.298s до 2.766s. Спасибо за совет!
         }
 
     }
 
+
+    /**
+     * Поиск документов в индексе по критерию релевантности запроса.
+     *
+     * @param query Содержимое строки запроса
+     * @return Строка с номерами документов вида "Док1, Док2, Док3, ... "
+     */
     public String findRelevantDocs(String query) {
         Map<String, Integer> queryUniqueTokens = getIndexOfOccurrences(query);
         Map<Integer, Integer> hitsSumRegister = new HashMap<>();
@@ -123,7 +239,7 @@ class FullTextIndex {
             }
         }
 
-        //тут важен порядок элементов - поэтому TreeMap.
+        // Тут важен порядок элементов - поэтому TreeMap.
         // За сохранение порядка платим логарифмическим временем доступа.
         Map<Integer, List<Integer>> relevantDocsIdx = new TreeMap<>(Collections.reverseOrder());
         reverseReflection(hitsSumRegister, relevantDocsIdx);
@@ -143,13 +259,22 @@ class FullTextIndex {
     }
 }
 
+/**
+ * Основной класс решения и точка входа в него.
+ */
 public class FinalSolutionA {
+    /**
+     * Функция приема и обработки входных параметров
+     *
+     * @param inputSequence Массив строкового представления входных параметров.
+     * @return Строковое представление результата.
+     */
     public static String processQueries(String[] inputSequence) {
         FullTextIndex indexManager = new FullTextIndex();
         int numOfDocs = Integer.parseInt(inputSequence[0]);
 
         for (int i = 1; i < numOfDocs + 1; i++)
-            indexManager.AddDocument(inputSequence[i]);
+            indexManager.addDocument(inputSequence[i]);
 
         StringJoiner responseBuilder = new StringJoiner("\n");
         int numOfQueries = Integer.parseInt(inputSequence[numOfDocs + 1]);
@@ -161,6 +286,14 @@ public class FinalSolutionA {
         return responseBuilder.toString();
     }
 
+    /**
+     * Точка входа в программу.
+     * Зачитываение входных параметров из консоли.
+     * Вывод результатов работы программы в консоль.
+     *
+     * @param args Аргументы командной строки (для целей совместимости).
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         int numOfDocs = Integer.parseInt(reader.readLine());
