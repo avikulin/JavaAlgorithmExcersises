@@ -1,4 +1,4 @@
-//---код посылки в Яндекс.Контест - 51217979
+//---код посылки в Яндекс.Контест - 51230008
 
 package FinalA; // эту строку нужно закомментировать перед отправкой в Яндекс.Контест.
 
@@ -6,8 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.LongAdder;
 
 /*
         ОПИСАНИЕ РЕШЕНИЯ
@@ -124,7 +123,7 @@ import java.util.stream.Collectors;
 class FullTextIndex {
     private Map<String, Map<Integer, Integer>> reverseIndexStore;
     private int docsCounter;
-    private final int MAX_ITEMS_IN_RESPONCE = 5;
+    private final int MAX_ITEMS_IN_RESPONSE = 5;
 
     FullTextIndex() {
         reverseIndexStore = new HashMap<>();
@@ -138,7 +137,7 @@ class FullTextIndex {
      */
     public void addDocument(String document) {
         docsCounter++;
-        Map<String, Integer> indexOfOccurrence = getIndexOfOccurrences(document);
+        Map<String, LongAdder> indexOfOccurrence = getIndexOfOccurrences(document);
         constructReverseIndex(indexOfOccurrence, docsCounter);
     }
 
@@ -148,15 +147,13 @@ class FullTextIndex {
      * @param str Входная строка, по которой производится индексирование.
      * @return Структура вида {<слово>:<кол-во вхождений>}
      */
-    private Map<String, Integer> getIndexOfOccurrences(String str) {
-        String[] wordSequence = str.split(" ");
-        return Arrays
-                .stream(wordSequence)
-                .collect(Collectors
-                        .groupingBy(Function.identity(),
-                                Collectors.
-                                        collectingAndThen(Collectors.counting(),
-                                                Long::intValue)));
+    private Map<String, LongAdder> getIndexOfOccurrences(String str){
+        Map<String, LongAdder> res = new HashMap<>();
+        String[] wordSequence = str.split("\\s");
+        for (String word: wordSequence)
+            res.computeIfAbsent(word, key -> new LongAdder()).increment();
+
+        return res;
     }
 
     /**
@@ -165,19 +162,13 @@ class FullTextIndex {
      * @param occurrenceIdx Структура индекса вхождения, построенного по содержимому документа.
      * @param docID         Код индексируемого документа.
      */
-    private void constructReverseIndex(Map<String, Integer> occurrenceIdx, int docID) {
-        for (Map.Entry<String, Integer> kv : occurrenceIdx.entrySet()) {
-            Map<Integer, Integer> hitsRate = reverseIndexStore.get(kv.getKey());
-            if (hitsRate == null) {
-                Map<Integer, Integer> newHitsRate = new HashMap<>();
-
-                reverseIndexStore.put(kv.getKey(), newHitsRate);
-            } else {
-                hitsRate.put(docID, kv.getValue());
-            }
+    private void constructReverseIndex(Map<String, LongAdder> occurrenceIdx, int docID) {
+        for (Map.Entry<String, LongAdder> kv : occurrenceIdx.entrySet()) {
+            reverseIndexStore
+                    .computeIfAbsent(kv.getKey(), key->new HashMap<>())
+                        .put(docID, kv.getValue().intValue());
         }
     }
-
 
     /**
      * Построение обратного (инвертированного) отображения структуры данных индекса:
@@ -186,30 +177,16 @@ class FullTextIndex {
      * @param source      Исходный индекс {<ключ1>:<значение1>, <ключ2>:<значение1>, ...}
      * @param destination Инвертированный индекс {<значение1>:[<ключ1>, <ключ2>, ...]}
      */
-    private void reverseReflection(Map<Integer, Integer> source, Map<Integer, List<Integer>> destination) {
-        for (Map.Entry<Integer, Integer> kv : source.entrySet()) {
-            int keyForReversedMap = kv.getValue();
+    private void reverseReflection(Map<Integer, LongAdder> source, Map<Integer, List<Integer>> destination) {
+        for (Map.Entry<Integer, LongAdder> kv : source.entrySet()) {
+            int keyForReversedMap = kv.getValue().intValue();
             int valueForReversedMap = kv.getKey();
-            List<Integer> relevantDocsIdSequence =
-                    destination
-                            .computeIfAbsent(keyForReversedMap,
-                                    key -> {
-                                        List<Integer> lst = new ArrayList<>();
-                                        lst.add(valueForReversedMap);
-                                        return lst;
-                                    });
-
-            // проверяем за O(1), что этот список не был только что создан в блоке <computeIfAbsent>
-            boolean isJustCreated = (relevantDocsIdSequence.get(0) == valueForReversedMap)
-                    && (relevantDocsIdSequence.size() == 1);
-            if (!isJustCreated) relevantDocsIdSequence.add(valueForReversedMap);
-
-            // после удаления лишнего <.get(..)>(видимо я был в этот момент в припадке беспамятства) и рефакторинга
-            // на <.computeIfAbsent(..)> общее время выполнения сократилось 3.298s до 2.766s. Спасибо за совет!
+            destination
+                    .computeIfAbsent(keyForReversedMap,ArrayList::new)
+                    .add(valueForReversedMap);
         }
 
     }
-
 
     /**
      * Поиск документов в индексе по критерию релевантности запроса.
@@ -218,23 +195,15 @@ class FullTextIndex {
      * @return Строка с номерами документов вида "Док1, Док2, Док3, ... "
      */
     public String findRelevantDocs(String query) {
-        Map<String, Integer> queryUniqueTokens = getIndexOfOccurrences(query);
-        Map<Integer, Integer> hitsSumRegister = new HashMap<>();
+        Map<String, LongAdder> queryUniqueTokens = getIndexOfOccurrences(query);
+        Map<Integer, LongAdder> hitsSumRegister = new HashMap<>();
 
-        for (Map.Entry<String, Integer> queryToken : queryUniqueTokens.entrySet()) {
+        for (Map.Entry<String, LongAdder> queryToken : queryUniqueTokens.entrySet()) {
             String queryKey = queryToken.getKey();
             Map<Integer, Integer> indexHits = reverseIndexStore.get(queryKey);
-
             if (indexHits != null) { //если слова нет в индексе - пропускаем итерацию цикла и переходим к следующему.
-                Integer hitsValue = 0; //экономим время на создании и инициализации ссылочного типа
                 for (Map.Entry<Integer, Integer> kv : indexHits.entrySet()) {
-                    hitsValue = hitsSumRegister.get(kv.getKey()); //используем Integer как nullable-тип.
-                    if (hitsValue != null) {
-                        hitsValue += kv.getValue();
-                        hitsSumRegister.put(kv.getKey(), hitsValue);
-                    } else {
-                        hitsSumRegister.put(kv.getKey(), kv.getValue());
-                    }
+                    hitsSumRegister.computeIfAbsent(kv.getKey(),key -> new LongAdder()).add(kv.getValue());
                 }
             }
         }
@@ -252,7 +221,7 @@ class FullTextIndex {
             for (int id : docsIdSequence) {
                 responseBuilder.add(String.valueOf(id));
                 responseItemCounter++;
-                if (responseItemCounter == MAX_ITEMS_IN_RESPONCE) return responseBuilder.toString();
+                if (responseItemCounter == MAX_ITEMS_IN_RESPONSE) return responseBuilder.toString();
             }
         }
         return responseBuilder.toString();
