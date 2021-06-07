@@ -1,14 +1,19 @@
 package FinalA;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.StringJoiner;
+import java.util.StringTokenizer;
 
 /**
  * Класс инкапсулирует элементы множества участников соревнований
  */
 class Participant implements Comparable<Participant> {
-    private String personalLogin;
-    private Integer scoreValue;
-    private Integer penaltyValue;
+    private final String personalLogin;
+    private final int scoreValue;
+    private final int penaltyValue;
 
     /**
      * Конструктор элемента множества участников
@@ -26,7 +31,7 @@ class Participant implements Comparable<Participant> {
     /**
      * Возвращает имя учетной записи элемента
      *
-     * @return
+     * @return Имя учетной записи.
      */
     String getLogin() {
         return personalLogin;
@@ -42,155 +47,153 @@ class Participant implements Comparable<Participant> {
      */
     @Override
     public int compareTo(Participant other) {
-        if (!scoreValue.equals(other.scoreValue))
-            return scoreValue > other.scoreValue ? -1 : 1; // сортировка по убыванию
+        if (scoreValue != other.scoreValue)
+            return scoreValue > other.scoreValue ? 1 : -1; // сортировка по убыванию
 
-        if (!penaltyValue.equals(other.penaltyValue))
-            return penaltyValue < other.penaltyValue ? -1 : 1; // сортировка по убыванию
+        if (penaltyValue != other.penaltyValue)
+            return penaltyValue < other.penaltyValue ? 1 : -1; // сортировка по убыванию
 
-        return personalLogin.compareTo(other.personalLogin); // сортировка по возрастанию
+        return -1 * personalLogin.compareTo(other.personalLogin); // сортировка по возрастанию
     }
 }
 
-class PriorityQueue {
-    private int[] flatedHeapStorage;
-    private int dataFillPointer;
+class PriorityQueue implements Iterable<Participant> {
+    private final Participant[] flatedHeapStorage;
+    private int lastElementPointer;
 
     PriorityQueue(int queueSize) {
-        flatedHeapStorage = new int[queueSize + 1];
-        dataFillPointer = 0;
+        flatedHeapStorage = new Participant[queueSize + 1];
+        lastElementPointer = 0;
     }
 
-    public void push(int value) {
-    // to do...
+    public void push(Participant value) {
+        lastElementPointer++;
+        flatedHeapStorage[lastElementPointer] = value;
+        siftUp(lastElementPointer);
     }
 
-    public int pop() {
-    // to do...
-        return 0;
-    }
-
-    private static void swap(int[] heap, int idxOne, int idxTwo) {
-        if (idxOne == idxTwo) return;
-        int temp = heap[idxOne];
-        heap[idxOne] = heap[idxTwo];
-        heap[idxTwo] = temp;
-    }
-
-    private static int getParentIdx(int idx) {
-        return idx / 2;
-    }
-
-    private static int getLeftChild(int[] heap, int headIdx) {
-        int leftChildIdx = 2 * headIdx;
-        return (leftChildIdx < heap.length) ? leftChildIdx : -1;
-    }
-
-    private static int getRightChild(int[] heap, int headIdx) {
-        int rightChildIdx = headIdx * 2 + 1;
-        return (rightChildIdx < heap.length) ? rightChildIdx : -1;
-    }
-
-    private static int getMaxChildIdx(int[] heap, int headIdx) {
-        int leftChildIdx = getLeftChild(heap, headIdx);
-        int rightChildIdx = getRightChild(heap, headIdx);
-
-        if (leftChildIdx == -1) return rightChildIdx;
-        if (rightChildIdx == -1) return leftChildIdx;
-        if ((leftChildIdx == -1) && (rightChildIdx == -1)) return -1;
-
-        return (heap[leftChildIdx] > heap[rightChildIdx]) ? leftChildIdx : rightChildIdx;
-    }
-
-    private static int getIdxToSwap(int[] heap, int headIdx) {
-        int maxChildIdx = getMaxChildIdx(heap, headIdx);
-        if (maxChildIdx == -1) return headIdx;
-        return (heap[headIdx] > heap[maxChildIdx]) ? headIdx : maxChildIdx;
-    }
-
-    public static int siftDown(int[] heap, int idx) {
-        int idxToSwap = getIdxToSwap(heap, idx);
-        int res;
-        if (idxToSwap == idx)
-            return idx;
-        else {
-            swap(heap, idx, idxToSwap);
-            res = siftDown(heap, idxToSwap);
-        }
+    public Participant pop() {
+        Participant res = flatedHeapStorage[1];
+        flatedHeapStorage[1] = flatedHeapStorage[lastElementPointer];
+        lastElementPointer--;
+        siftDown(1);
         return res;
     }
 
-    public static int siftUp(int[] heap, int idx) {
-        if (idx == 1) return idx;
+    public int length() {
+        return lastElementPointer;
+    }
+
+    private void swap(int idxOne, int idxTwo) {
+        if (idxOne == idxTwo) return;
+        Participant temp = flatedHeapStorage[idxOne];
+        flatedHeapStorage[idxOne] = flatedHeapStorage[idxTwo];
+        flatedHeapStorage[idxTwo] = temp;
+    }
+
+    private int getParentIdx(int idx) {
+        return idx / 2;
+    }
+
+    private int getLeftChild(int headIdx) {
+        int leftChildIdx = 2 * headIdx;
+        return (leftChildIdx < lastElementPointer) ? leftChildIdx : -1;
+    }
+
+    private int getRightChild(int headIdx) {
+        int rightChildIdx = headIdx * 2 + 1;
+        return (rightChildIdx < lastElementPointer) ? rightChildIdx : -1;
+    }
+
+    private int getMaxChildIdx(int headIdx) {
+        int leftChildIdx = getLeftChild(headIdx);
+        int rightChildIdx = getRightChild(headIdx);
+
+        if ((leftChildIdx == -1) && (rightChildIdx == -1)) return -1;
+
+        if (leftChildIdx == -1) return rightChildIdx;
+        if (rightChildIdx == -1) return leftChildIdx;
+
+        return
+                (flatedHeapStorage[leftChildIdx]
+                        .compareTo(flatedHeapStorage[rightChildIdx]) > 0) ? leftChildIdx : rightChildIdx;
+    }
+
+    private int getIdxToSwap(int headIdx) {
+        int maxChildIdx = getMaxChildIdx(headIdx);
+        if (maxChildIdx == -1) return headIdx;
+        return (flatedHeapStorage[headIdx].compareTo(flatedHeapStorage[maxChildIdx]) > 0) ? headIdx : maxChildIdx;
+    }
+
+    private void siftDown(int idx) {
+        int idxToSwap = getIdxToSwap(idx);
+        if (idxToSwap == idx) return;
+
+        swap(idx, idxToSwap);
+        siftDown(idxToSwap);
+    }
+
+    private void siftUp(int idx) {
+        if (idx == 1) return;
         int parentNodeIdx = getParentIdx(idx);
-        if (heap[parentNodeIdx] < heap[idx]) {
-            swap(heap, parentNodeIdx, idx);
-            return siftUp(heap, parentNodeIdx);
+        if (flatedHeapStorage[parentNodeIdx].compareTo(flatedHeapStorage[idx]) < 0) {
+            swap(parentNodeIdx, idx);
+            siftUp(parentNodeIdx);
         }
-        return idx;
     }
 
+    @Override
+    public Iterator<Participant> iterator() {
+        return new PrioryQueueIterator(this);
+    }
 }
 
-/**
- * Класс инкапсулирует функционал турнирной таблицы
- */
-class ScoreTable {
-    private Participant[] scoresStorage;
-    private int stackHeadPointer;
+class PrioryQueueIterator implements Iterator<Participant> {
+    private final PriorityQueue obj;
 
-    /**
-     * Конструктор экземпляра турнирной таблицы
-     *
-     * @param numberOfParticipants
-     */
-    ScoreTable(int numberOfParticipants) {
-        scoresStorage = new Participant[numberOfParticipants];
-        stackHeadPointer = -1;
+    PrioryQueueIterator(PriorityQueue iterableObject) {
+        obj = iterableObject;
     }
 
-    /**
-     * Добавление записи участника в турнирную таблицу
-     *
-     * @param participant Ссылка на экземпляр участника соревнований
-     */
-    public void appendParticipant(Participant participant) {
-        stackHeadPointer++;
-        scoresStorage[stackHeadPointer] = participant;
+    @Override
+    public boolean hasNext() {
+        return obj.length() > 0;
     }
 
-    /**
-     * Вывод упорядоченных (начиная с первого места) значений турнирной таблицы
-     *
-     * @return Текстовое представление турнирной таблцы (каждый участник на отдельной строке)
-     */
-    public String printList() {
-        if (stackHeadPointer == -1) return "";
-
-        StringJoiner joiner = new StringJoiner("\n", "", "");
-        for (int i = 0; i <= stackHeadPointer; i++)
-            joiner.add(scoresStorage[i].getLogin());
-
-        return joiner.toString();
+    @Override
+    public Participant next() {
+        return obj.pop();
     }
-
-    /**
-     * Перестановка двух элементов множества участников
-     *
-     * @param firstIdx  Индекс первого элемента
-     * @param secondIdx Индекс второго элемента
-     */
-    private void swap(int firstIdx, int secondIdx) {
-        if (firstIdx == secondIdx) return;
-
-        Participant temp = scoresStorage[firstIdx];
-        scoresStorage[firstIdx] = scoresStorage[secondIdx];
-        scoresStorage[secondIdx] = temp;
-    }
-
-
 }
-
 
 public class FinalSolutionA {
+    public static String process(String[] input) {
+        StringJoiner stringJoiner = new StringJoiner("\n");
+        PriorityQueue participants = new PriorityQueue(input.length);
+        int numberOfRows = Integer.parseInt(input[0]);
+        for (int i = 1; i <= numberOfRows; i++) {
+            StringTokenizer tokenizer = new StringTokenizer(input[i]);
+            String login = tokenizer.nextToken();
+            int score = Integer.parseInt(tokenizer.nextToken());
+            int penalty = Integer.parseInt(tokenizer.nextToken());
+            participants.push(new Participant(login, score, penalty));
+        }
+
+        for (Participant participant : participants) {
+            stringJoiner.add(participant.getLogin());
+        }
+
+        return stringJoiner.toString();
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        int numberOfRows = Integer.parseInt(reader.readLine());
+        String[] buffer = new String[numberOfRows + 1];
+        buffer[0] = String.valueOf(numberOfRows);
+        for (int i = 0; i < numberOfRows; i++) {
+            buffer[i] = reader.readLine();
+        }
+        System.out.println(process(buffer));
+    }
 }
