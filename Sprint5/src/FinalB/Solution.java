@@ -75,7 +75,7 @@ class TreeBuilder {
             int headPos = valuesStack.pop(); //на предыдущем шаге уже добавлен в дерево
             Node currentHeadNode = nodesStack.pop(); //на предыдущем шаге уже добавлен в дерево
             int rightPos = getRightNodePosition(values, headPos);
-            if (rightPos != -1) {
+            if ((rightPos != -1)&&(values[rightPos]!=-1)) {
                 Node node = new Node();
                 node.setValue(values[rightPos]);
                 currentHeadNode.setRight(node);
@@ -85,7 +85,7 @@ class TreeBuilder {
             }
 
             int leftPos = getLeftNodePosition(values, headPos);
-            if (leftPos != -1) {
+            if ((leftPos != -1)&&(values[leftPos]!=-1)) {
                 Node node = new Node();
                 node.setValue(values[leftPos]);
                 currentHeadNode.setLeft(node);
@@ -98,12 +98,12 @@ class TreeBuilder {
 
     private int getLeftNodePosition(int[] flattedTree, int head) {
         int position = head * 2;
-        return (position < flattedTree.length) ? flattedTree[position] : -1;
+        return (position < flattedTree.length) ? position : -1;
     }
 
     private int getRightNodePosition(int[] flattedTree, int head) {
         int position = head * 2 + 1;
-        return (position < flattedTree.length) ? flattedTree[position] : -1;
+        return (position < flattedTree.length) ? position : -1;
     }
 
     public void markNode(int idx) {
@@ -231,7 +231,8 @@ public class Solution {
     }
 
     public static void main(String[] args) {
-        TreeBuilder treeBuilder = new TreeBuilder(new int[]{-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+        TreeBuilder treeBuilder = new TreeBuilder(new int[]{-1, 1, -1, 2, -1, -1, -1, 3, -1, -1, -1, -1, -1, -1, 4, -1,-1, -1, -1, -1, -1, -1,-1, -1, -1, -1, -1, -1,5});
+//        TreeBuilder treeBuilder = new TreeBuilder(new int[]{-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
 //        TreeBuilder treeBuilder = new TreeBuilder(new int[]{-1, 1, -1, 3, -1, -1, 6, 7, -1, -1, -1, -1, 12, 13});
         treeBuilder.markNode(3);
         System.out.println("Flat signature: ");
