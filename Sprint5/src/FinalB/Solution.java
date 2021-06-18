@@ -1,7 +1,6 @@
 package FinalB;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 class Node {
     private Node left;
@@ -40,30 +39,43 @@ class TreeBuilder {
     private int treeSize;
     private int numberOfLevels;
 
-    private void init() {
-        flattedStorage[0] = null;
-        numberOfLevels = (int) (Math.log(treeSize) / Math.log(2)) + 1; // считаем с единицы
-    }
-
-    TreeBuilder(Node root, int size) {
+    private void initBase(Node root, int size) {
         rootNode = root;
         treeSize = size;
         flattedStorage = new Node[treeSize + 1];
         flattedStorage[1] = rootNode;
+        flattedStorage[0] = null;
+        numberOfLevels = (int) (Math.log(treeSize) / Math.log(2)) + 1; // считаем с единицы
         markedNodes = new HashSet<>();
-        init();
+    }
+
+    TreeBuilder(Node root, int size) {
+        initBase(root, size);
+    }
+
+    TreeBuilder(Node root) {
+        List<Node> treeValues = new ArrayList<>();
+        Stack<Node> stack = new Stack<>();
+        stack.push(root);
+        while (!stack.empty()) {
+            Node currentHead = stack.pop();
+            treeValues.add(currentHead);
+            Node possibleRight = currentHead.getRight();
+            Node possibleLeft = currentHead.getLeft();
+            if (possibleRight != null)
+                stack.push(possibleRight);
+            if (possibleLeft != null)
+                stack.push(possibleLeft);
+        }
+        initBase(root, treeValues.size());
+        for (int i = 0; i < treeValues.size(); i++)
+            flattedStorage[i + 1] = treeValues.get(i);
     }
 
     TreeBuilder(int[] values) {
-        treeSize = values.length - 1;
-        flattedStorage = new Node[1 + treeSize];
-        init();
-
         rootNode = new Node();
         rootNode.setValue(values[1]);
-        flattedStorage[1] = rootNode;
-
-        markedNodes = new HashSet<>();
+        initBase(rootNode, values.length - 1);
 
         Stack<Integer> valuesStack = new Stack<>();
         Stack<Node> nodesStack = new Stack<>();
@@ -75,7 +87,7 @@ class TreeBuilder {
             int headPos = valuesStack.pop(); //на предыдущем шаге уже добавлен в дерево
             Node currentHeadNode = nodesStack.pop(); //на предыдущем шаге уже добавлен в дерево
             int rightPos = getRightNodePosition(values, headPos);
-            if ((rightPos != -1)&&(values[rightPos]!=-1)) {
+            if ((rightPos != -1) && (values[rightPos] != -1)) {
                 Node node = new Node();
                 node.setValue(values[rightPos]);
                 currentHeadNode.setRight(node);
@@ -85,7 +97,7 @@ class TreeBuilder {
             }
 
             int leftPos = getLeftNodePosition(values, headPos);
-            if ((leftPos != -1)&&(values[leftPos]!=-1)) {
+            if ((leftPos != -1) && (values[leftPos] != -1)) {
                 Node node = new Node();
                 node.setValue(values[leftPos]);
                 currentHeadNode.setLeft(node);
@@ -165,6 +177,9 @@ class TreeBuilder {
         String templateRegular = "%d";
         String templateMarked = "%d*";
 
+        int maxPaddingLeft = initialBias[0];
+        int maxPaddingRight = 0;
+
         int currentLevel = 0;
         while (currentLevel < numberOfLevels) {
             int numberOfElementsInLine = (int) Math.pow(2, currentLevel);
@@ -178,13 +193,23 @@ class TreeBuilder {
             StringJoiner lineAssembler = new StringJoiner(intervalBiasStr, initialBiasStr, "\n");
             StringJoiner subLineAssembler = new StringJoiner(intervalBiasStr, initialBiasStr, "\n");
 
+            int actualNodesInLine = 0;
+            int paddingLeft = initialBias[currentLevel];
+            int paddingRight = paddingLeft;
+
             for (int i = levelStartIdx; i <= levelEndIdx; i++) {
                 if (flattedStorage[i] == null) {
                     String emptyStub = "\t".repeat(nodeTotalWidth[currentLevel]);
                     lineAssembler.add(emptyStub);
                     subLineAssembler.add(emptyStub);
+                    if (actualNodesInLine == 0)
+                        paddingLeft += nodeTotalWidth[currentLevel] + intervalBias[currentLevel];
                     continue;
                 }
+                actualNodesInLine++;
+                paddingRight = levelEndIdx - i;
+                System.out.println(String.format("%d) left - %d, right - %d (count - %d)",
+                        currentLevel, paddingLeft, paddingRight, actualNodesInLine));
 
                 String valueStr = "";
                 if (markedNodes.contains(i))
@@ -194,8 +219,8 @@ class TreeBuilder {
 
                 int desiredEmptyStubStrWidth = nodeTotalWidth[currentLevel] * TAB_TO_SPACES - valueStr.length() - 2;
                 String emptyStub;
-                if ((valueStr.length()==2)&&(desiredEmptyStubStrWidth==0))
-                    emptyStub="";
+                if ((valueStr.length() == 2) && (desiredEmptyStubStrWidth == 0))
+                    emptyStub = "";
                 else
                     emptyStub = (desiredEmptyStubStrWidth > 1) ? ".".repeat(desiredEmptyStubStrWidth) : " ";
 
@@ -209,12 +234,18 @@ class TreeBuilder {
                 lineAssembler.add(nodeStr);
                 subLineAssembler.add(subNodeStr);
             }
+
+            if (paddingLeft < maxPaddingLeft) maxPaddingLeft = paddingLeft;
+            if (paddingRight > maxPaddingRight) maxPaddingRight = paddingRight;
+
             res.append(lineAssembler.toString());
             if (currentLevel < numberOfLevels - 1)
                 res.append(subLineAssembler.toString());
 
             currentLevel++;
         }
+        System.out.println(maxPaddingLeft);
+        System.out.println(maxPaddingRight);
         return res.toString();
     }
 }
@@ -231,7 +262,7 @@ public class Solution {
     }
 
     public static void main(String[] args) {
-        TreeBuilder treeBuilder = new TreeBuilder(new int[]{-1, 1, -1, 2, -1, -1, -1, 3, -1, -1, -1, -1, -1, -1, 4, -1,-1, -1, -1, -1, -1, -1,-1, -1, -1, -1, -1, -1,5});
+        TreeBuilder treeBuilder = new TreeBuilder(new int[]{-1, 1, -1, 2, -1, -1, -1, 3, -1, -1, -1, -1, -1, -1, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5});
 //        TreeBuilder treeBuilder = new TreeBuilder(new int[]{-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
 //        TreeBuilder treeBuilder = new TreeBuilder(new int[]{-1, 1, -1, 3, -1, -1, 6, 7, -1, -1, -1, -1, 12, 13});
         treeBuilder.markNode(3);
