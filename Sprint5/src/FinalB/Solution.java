@@ -59,7 +59,8 @@ public class Solution {
      * @return Найденный приемник
      */
     private static NodeInfo searchForPossibleReplace(NodeInfo nodeInfo) {
-        if (nodeInfo == null) return new NodeInfo(null, null, Position.NULL);
+        if (nodeInfo == null) // для несуществующего узла - замены не существует.
+            return new NodeInfo(null, null, Position.NULL);
 
         Stack<Node> nodeStack = new Stack<>();
 
@@ -102,27 +103,29 @@ public class Solution {
         Node parent = root;
         Node current = root;
         Position position = Position.ROOT;
+        NodeInfo nullObj =  new NodeInfo(null, null, Position.NULL); // возращаем данный объект,
+                                                                                // если в дереве нет нужного элемента.
         while (true) {
             if (current.getValue() == key) return new NodeInfo(parent, current, position); // элемент нашелся.
             if ((current.getLeft() == null) && (current.getRight() == null))
-                return null; // в дереве нет нужного элемента.
+                return nullObj;
+
             parent = current;
             if (key < parent.getValue()) {
                 if (parent.getLeft() == null)
-                    return null; // в дереве нет нужного элемента.
+                    return nullObj; // в дереве нет нужного элемента.
                 else {
                     current = parent.getLeft();
                     position = Position.LEFT;
                 }
             } else {
                 if (parent.getRight() == null)
-                    return null; // в дереве нет нужного элемента.
+                    return nullObj; // в дереве нет нужного элемента.
                 else {
                     current = parent.getRight();
                     position = Position.RIGHT;
                 }
             }
-
         }
     }
 
@@ -195,27 +198,27 @@ public class Solution {
 
     public static void main(String[] args) {
         TreeBuilder tree = new TreeBuilder(new int[]{-1,
-                50,
-                25, -1,
-                15, 35, -1, -1,
-                5, 20, 30, 40, -1, -1, -1, -1}
+                                        50,
+                            25,                      -1,
+                    15,         35,           -1,           -1,
+                5,      20,  30,     40,  -1,     -1,   -1,     -1}
         );
         System.out.println(String.format("Given tree:\n%s\n", tree.getTreeHierarchyView()));
 
-        int[] keys = new int[]{15, 5, 30, 25, 35, 40, 50};
-        Node[] trees = new Node[keys.length];
+        int[] keys = new int[]{50, 40, 5, 25, 20, 35, 15, 0};
+        Node root = tree.projectToTree();
+        int  height = tree.getHeight();
 
-        for (int i = 0; i < trees.length; i++) {
-            trees[i] = new TreeBuilder(tree.getFlattedTreeValues()).getRootNode();
-            NodeInfo searchedNode = searchNode(trees[i], keys[i]);
+        for (int i = 0; i < keys.length; i++) {
+            NodeInfo searchedNode = searchNode(root, keys[i]);
             NodeInfo replacementNode = searchForPossibleReplace(searchedNode);
             System.out.println("-----------------------------------------------------------------------------------");
             System.out.println(String.format("Processing key %d:\n\t-%s,\n\t\t-possible replacement:\n\t\t\t-%s\n",
                     keys[i], searchedNode.toString(), replacementNode.toString()));
-            Node root = remove(trees[i], keys[i]);
-            TreeBuilder res = new TreeBuilder(root, tree.getHeight());
+            root = remove(root, keys[i]);
+            TreeBuilder tmp = new TreeBuilder(root, height);
             System.out.println(String.format("\t\t-deleting key %d. \n\t\t\t-resulting tree:\n%s\n",
-                    keys[i], res.getTreeHierarchyView()));
+                    keys[i], tmp.getTreeHierarchyView()));
         }
     }
 }
