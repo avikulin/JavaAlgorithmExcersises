@@ -87,6 +87,11 @@ public class TreeBuilder {
             }
         }
     }
+
+    public TreeBuilder(TreeBuilder other){
+        this(other.getFlattedTreeValues());
+    }
+
     public int getHeight(){return numberOfLevels;}
 
     private int getLeftNodePosition(int[] flattedTree, int head) {
@@ -107,8 +112,33 @@ public class TreeBuilder {
         markedNodes.add(idx);
     }
 
-    public Node getRootNode() {
-        return rootNode;
+    public Node projectToTree(){
+        Node clonedRoot = new Node();
+        clonedRoot.setValue(rootNode.getValue());
+
+        Stack<Node> stackCurrentTree = new Stack<>();
+        Stack<Node> stackClonedTree = new Stack<>();
+        stackCurrentTree.push(rootNode);
+        stackClonedTree.push(clonedRoot);
+        while(!stackCurrentTree.empty()){
+            Node currentHead = stackCurrentTree.pop();
+            Node clonedHead = stackClonedTree.pop();
+            if (currentHead.getRight()!=null){
+                Node rightNode = new Node();
+                rightNode.setValue(currentHead.getRight().getValue());
+                clonedHead.setRight(rightNode);
+                stackCurrentTree.push(currentHead.getRight());
+                stackClonedTree.push(rightNode);
+            }
+            if (currentHead.getLeft()!=null){
+                Node leftNode = new Node();
+                leftNode.setValue(currentHead.getLeft().getValue());
+                clonedHead.setLeft(leftNode);
+                stackCurrentTree.push(currentHead.getLeft());
+                stackClonedTree.push(leftNode);
+            }
+        }
+        return clonedRoot;
     }
 
     public int[] getFlattedTreeValues() {
@@ -234,4 +264,28 @@ public class TreeBuilder {
         }
         return String.join("\n", res);
     }
+
+
+    @Override
+    public boolean equals(Object o) {
+        TreeBuilder other = (TreeBuilder)o;
+        int lastPosThis = this.flattedStorage.length - 1;
+        int lastPosOther = other.flattedStorage.length - 1;
+
+        while (this.flattedStorage[lastPosThis] == null){
+            lastPosThis--;
+        }
+
+        while (other.flattedStorage[lastPosOther] == null){
+            lastPosOther--;
+        }
+
+        if (lastPosThis != lastPosOther) return false;
+
+        for (int i=1; i<=lastPosThis;i++){
+            if (this.flattedStorage[i].getValue() != other.flattedStorage[i].getValue()) return false;
+        }
+        return true;
+    }
+
 }
