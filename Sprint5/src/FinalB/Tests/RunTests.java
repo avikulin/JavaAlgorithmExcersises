@@ -37,7 +37,7 @@ public class RunTests {
 
          */
 
-        TreeBuilder[] trees = new TreeBuilder[38];
+        TreeBuilder[] trees = new TreeBuilder[39];
 
         trees[0] = new TreeBuilder(new int[]{-1,50});
 
@@ -70,12 +70,12 @@ public class RunTests {
 
         trees[23] = new TreeBuilder(new int[]{-1,50, 35, -1, 15, -1, -1, -1, 10, -1, -1, -1, -1, -1, -1, -1});
         trees[24] = new TreeBuilder(new int[]{-1,50, -1, 75, -1, -1, -1, 95, -1, -1, -1, -1, -1, -1, -1, 100});
-        trees[25] = new TreeBuilder(new int[]{-1,50, 35, -1, -1, 45, -1, -1, -1, -1, -1, 50, -1, -1, -1, -1});
+        trees[25] = new TreeBuilder(new int[]{-1,50, 35, -1, -1, 45, -1, -1, -1, -1, -1, 49, -1, -1, -1, -1});
         trees[26] = new TreeBuilder(new int[]{-1,50, -1, 75, -1, -1, 65, -1, -1, -1, -1, -1, 60, -1, -1, -1});
         trees[27] = new TreeBuilder(new int[]{-1,50, 35, -1, 15, -1, -1, -1, -1, 20, -1, -1, -1, -1, -1, -1});
         trees[28] = new TreeBuilder(new int[]{-1,50, -1, 75, -1, -1, -1, 95, -1, -1, -1, -1, -1, -1, 90, -1});
         trees[29] = new TreeBuilder(new int[]{-1,50, -1, 75, -1, -1, 65, -1, -1, -1, -1, -1, 60, 70, -1, -1});
-        trees[30] = new TreeBuilder(new int[]{-1,50, 35, -1, -1, 45, -1, -1, -1, -1, 40, 50, -1, -1, -1, -1});
+        trees[30] = new TreeBuilder(new int[]{-1,50, 35, -1, -1, 45, -1, -1, -1, -1, 40, 49, -1, -1, -1, -1});
         trees[31] = new TreeBuilder(new int[]{-1,50, 35, -1, -1, 45, -1, -1, -1, -1, 40, -1, -1, -1, -1, -1});
         trees[32] = new TreeBuilder(new int[]{-1,50, -1, 75, -1, -1, 65, -1, -1, -1, -1, -1, -1, 70, -1, -1});
         trees[33] = new TreeBuilder(new int[]{-1,50, 35, -1, 15, 45, -1, -1, -1, -1, 40, -1, -1, -1, -1, -1});
@@ -246,64 +246,370 @@ public class RunTests {
         tr.append(new YTestCase<String, TestParamsBundle>(
                         "9-1",
                         new TestParamsBundle(trees[9].projectToTree(), 2, 50),
-                        "[-1, 75, 35, 95, 15, -1, -1, -1]"
+                        "[-1, 75, 35, 95]"
                 )
         );
         //  Берем шаблон 9. Удаляем лист слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "9-2",
+                        new TestParamsBundle(trees[9].projectToTree(), 2, 35),
+                        "[-1, 50, -1, 75, -1, -1, -1, 95]"
+                )
+        );
+
         //  Берем шаблон 9. Удаляем середину справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "9-3",
+                        new TestParamsBundle(trees[9].projectToTree(), 2, 35),
+                        "[-1, 50, 35, 95]"
+                )
+        );
+
         //  Берем шаблон 10. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "10-1",
+                        new TestParamsBundle(trees[10].projectToTree(), 2, 50),
+                        "[-1, 75, 35, -1, 15, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 10. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "10-2",
+                        new TestParamsBundle(trees[10].projectToTree(), 2, 30),
+                        "[-1, 50, 15, 75]"
+                )
+        );
         //  Берем шаблон 10. Удаляем лист справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "10-3",
+                        new TestParamsBundle(trees[10].projectToTree(), 2, 75),
+                        "[-1, 50, 35, -1, 15, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 11. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "11-1",
+                        new TestParamsBundle(trees[11].projectToTree(), 2, 50),
+                        "[-1, 75, 65, 95]"
+                )
+        );
         //  Берем шаблон 11. Удаляем середину.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "11-2",
+                        new TestParamsBundle(trees[11].projectToTree(), 2, 75),
+                        "[-1, 50, -1, 65, -1, -1, -1, 95]"
+                )
+        );
         //  Берем шаблон 12. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "12-1",
+                        new TestParamsBundle(trees[12].projectToTree(), 2, 50),
+                        "[-1, 35, 15, 45]"
+                )
+        );
         //  Берем шаблон 12. Удаляем середину.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "12-2",
+                        new TestParamsBundle(trees[12].projectToTree(), 2, 35),
+                        "[-1, 50, 45, -1, 15, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 13. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "13-1",
+                        new TestParamsBundle(trees[13].projectToTree(), 2, 50),
+                        "[-1, 75, 35, -1, -1, 45, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 13. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "13-2",
+                        new TestParamsBundle(trees[13].projectToTree(), 2, 35),
+                        "[-1, 50, 45, 75]"
+                )
+        );
+
         //  Берем шаблон 14. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "14-1",
+                        new TestParamsBundle(trees[14].projectToTree(), 2, 50),
+                        "[-1, 65, 35, 75]"
+                )
+        );
+
         //  Берем шаблон 14. Удаляем середину справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "14-2",
+                        new TestParamsBundle(trees[14].projectToTree(), 2, 75),
+                        "[-1, 50, 35, 65]"
+                )
+        );
+
         //  Берем шаблон 15. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "15-1",
+                        new TestParamsBundle(trees[15].projectToTree(), 2, 50),
+                        "[-1, 75, 35, 95, -1, 45, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 15. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "15-2",
+                        new TestParamsBundle(trees[15].projectToTree(), 2, 35),
+                        "[-1, 50, 45, 75, -1, -1, -1, 95]"
+                )
+        );
+
         //  Берем шаблон 15. Удаляем середину справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "15-3",
+                        new TestParamsBundle(trees[15].projectToTree(), 2, 75),
+                        "[-1, 50, 35, 95, -1, 45, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 16. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "16-1",
+                        new TestParamsBundle(trees[16].projectToTree(), 2, 50),
+                        "[-1, 65, 35, 75, 15, -1, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 16. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "16-2",
+                        new TestParamsBundle(trees[16].projectToTree(), 2, 35),
+                        "[-1, 50, 15, 75, -1, -1, 65, -1]"
+                )
+        );
+
         //  Берем шаблон 16. Удаляем середину справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "16-3",
+                        new TestParamsBundle(trees[16].projectToTree(), 2, 75),
+                        "[-1, 50, 35, 65, 15, -1, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 17. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "17-1",
+                        new TestParamsBundle(trees[17].projectToTree(), 2, 50),
+                        "[-1, 65, 35, 75, -1, 45, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 17. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "17-2",
+                        new TestParamsBundle(trees[17].projectToTree(), 2, 35),
+                        "[-1, 50, 45, 75, -1, -1, 65, -1]"
+                )
+        );
+
         //  Берем шаблон 17. Удаляем середину справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "17-3",
+                        new TestParamsBundle(trees[17].projectToTree(), 2, 75),
+                        "[-1, 50, 35, 65, -1, 45, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 17. Удаляем лист слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "17-3",
+                        new TestParamsBundle(trees[17].projectToTree(), 2, 45),
+                        "[-1, 50, 35, 75, -1, -1, 65, -1]"
+                )
+        );
         //  Берем шаблон 17. Удаляем лист справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "17-4",
+                        new TestParamsBundle(trees[17].projectToTree(), 2, 65),
+                        "[-1, 50, 35, 75, -1, 45, -1, -1]"
+                )
+        );
         //  Берем шаблон 18. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "18-1",
+                        new TestParamsBundle(trees[18].projectToTree(), 2, 50),
+                        "[-1, 75, 35, -1, 15, 45, -1, -1]"
+                )
+        );
         //  Берем шаблон 18. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "18-2",
+                        new TestParamsBundle(trees[18].projectToTree(), 2, 35),
+                        "[-1, 50, 45, 75, 15, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 18. Удаляем верхний лист справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "18-3",
+                        new TestParamsBundle(trees[18].projectToTree(), 2, 75),
+                        "[-1, 50, 35, -1, 15, 45, -1, -1]"
+                )
+        );
         //  Берем шаблон 18. Удаляем нижний лист слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "18-4",
+                        new TestParamsBundle(trees[18].projectToTree(), 2, 15),
+                        "[-1, 50, 35, 75, -1, 45, -1, -1]"
+                )
+        );
         //  Берем шаблон 18. Удаляем нижний лист справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "18-5",
+                        new TestParamsBundle(trees[18].projectToTree(), 2, 45),
+                        "[-1, 50, 35, 75, 15, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 19. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "19-1",
+                        new TestParamsBundle(trees[19].projectToTree(), 2, 50),
+                        "[-1, 65, 35, 75, -1, -1, -1, 95]"
+                )
+        );
         //  Берем шаблон 19. Удаляем верхний лист слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "19-2",
+                        new TestParamsBundle(trees[19].projectToTree(), 2, 35),
+                        "[-1, 50, -1, 75, -1, -1, 65, 95]"
+                )
+        );
         //  Берем шаблон 19. Удаляем середину справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "19-3",
+                        new TestParamsBundle(trees[19].projectToTree(), 2, 75),
+                        "[-1, 50, 35, 95, -1, -1, 65, -1]"
+                )
+        );
         //  Берем шаблон 19. Удаляем нижний лист слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "19-3",
+                        new TestParamsBundle(trees[19].projectToTree(), 2, 65),
+                        "[-1, 50, 35, 75, -1, -1, -1, 95]"
+                )
+        );
         //  Берем шаблон 19. Удаляем нижний лист справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "19-4",
+                        new TestParamsBundle(trees[19].projectToTree(), 2, 95),
+                        "[-1, 50, 35, 75, -1, -1, 65, -1]"
+                )
+        );
         //  Берем шаблон 20. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "20-1",
+                        new TestParamsBundle(trees[20].projectToTree(), 2, 50),
+                        "[-1, 75, 35, 95, 15, 45, -1, -1]"
+                )
+        );
         //  Берем шаблон 20. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "20-2",
+                        new TestParamsBundle(trees[20].projectToTree(), 2, 35),
+                        "[-1, 50, 45, 75, 15, -1, -1, 95]"
+                )
+        );
         //  Берем шаблон 20. Удаляем середину справа.
-        //  Берем шаблон 20. Удаляем нижний лист слева.
-        //  Берем шаблон 20. Удаляем нижний лист в середине.
-        //  Берем шаблон 20. Удаляем нижний лист справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "20-3",
+                        new TestParamsBundle(trees[20].projectToTree(), 2, 75),
+                        "[-1, 50, 35, 95, 15, 45, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 21. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "21-1",
+                        new TestParamsBundle(trees[21].projectToTree(), 2, 50),
+                        "[-1, 65, 35, 75, 15, -1, -1, 95]"
+                )
+        );
         //  Берем шаблон 21. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "21-2",
+                        new TestParamsBundle(trees[21].projectToTree(), 2, 35),
+                        "[-1, 50, 15, 75, -1, -1, 65, 95]"
+                )
+        );
+
         //  Берем шаблон 21. Удаляем середину справа.
-        //  Берем шаблон 21. Удаляем нижний лист слева.
-        //  Берем шаблон 21. Удаляем нижний лист в середине.
-        //  Берем шаблон 21. Удаляем нижний лист справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "21-3",
+                        new TestParamsBundle(trees[21].projectToTree(), 2, 75),
+                        "[-1, 50, 35, 95, 15, -1, 65, -1]"
+                )
+        );
+
         //  Берем шаблон 22. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "22-1",
+                        new TestParamsBundle(trees[22].projectToTree(), 2, 50),
+                        "[-1, 65, 35, 75, 15, 45, -1, 95]"
+                )
+        );
         //  Берем шаблон 22. Удаляем середину слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "22-2",
+                        new TestParamsBundle(trees[22].projectToTree(), 2, 35),
+                        "[-1, 50, 45, 75, 15, -1, 65, 95]"
+                )
+        );
         //  Берем шаблон 22. Удаляем середину справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "22-3",
+                        new TestParamsBundle(trees[22].projectToTree(), 2, 75),
+                        "[-1, 50, 35, 95, 15, 45, 65, -1]"
+                )
+        );
         //  Берем шаблон 23. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "23-1",
+                        new TestParamsBundle(trees[23].projectToTree(), 3, 50),
+                        "[-1, 35, 15, -1, 10, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 23. Удаляем середину сверху.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "23-2",
+                        new TestParamsBundle(trees[23].projectToTree(), 3, 35),
+                        "[-1, 50, 15, -1, 10, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 23. Удаляем середину снизу.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "23-3",
+                        new TestParamsBundle(trees[23].projectToTree(), 3, 15),
+                        "[-1, 50, 35, -1, 10, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 24. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "24-1",
+                        new TestParamsBundle(trees[24].projectToTree(), 3, 50),
+                        "[-1, 75, -1, 95, -1, -1, -1, 100]"
+                )
+        );
         //  Берем шаблон 24. Удаляем середину сверху.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "24-2",
+                        new TestParamsBundle(trees[24].projectToTree(), 3, 75),
+                        "[-1, 50, -1, 95, -1, -1, -1, 100]"
+                )
+        );
         //  Берем шаблон 24. Удаляем середину снизу.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "24-3",
+                        new TestParamsBundle(trees[24].projectToTree(), 3, 95),
+                        "[-1, 50, -1, 75, -1, -1, -1, 100]"
+                )
+        );
         //  Берем шаблон 25. Удаляем корень.
         //  Берем шаблон 25. Удаляем середину сверху.
         //  Берем шаблон 25. Удаляем середину снизу.
@@ -317,19 +623,91 @@ public class RunTests {
         //  Берем шаблон 28. Удаляем середину сверху.
         //  Берем шаблон 28. Удаляем середину снизу.
         //  Берем шаблон 29. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "29-1",
+                        new TestParamsBundle(trees[29].projectToTree(), 3, 50),
+                        "[-1, 60, -1, 75, -1, -1, -1, 65, -1, -1, -1, -1, -1, -1, 70, -1, -1]"
+                )
+        );
         //  Берем шаблон 29. Удаляем середину сверху.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "29-2",
+                        new TestParamsBundle(trees[29].projectToTree(), 3, 75),
+                        "[-1, 50, -1, 65, -1, -1, 60, 70]"
+                )
+        );
         //  Берем шаблон 29. Удаляем середину снизу.
-        //  Берем шаблон 29. Удаляем нижний лист справа.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "29-3",
+                        new TestParamsBundle(trees[29].projectToTree(), 3, 65),
+                        "[-1, 50, -1, 75, -1, -1, 70, -1, -1, -1, -1, -1, 60, -1, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 30. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "30-1",
+                        new TestParamsBundle(trees[30].projectToTree(), 3, 50),
+                        "[-1, 35, -1, 45, -1, -1, 40, 49]"
+                )
+        );
         //  Берем шаблон 30. Удаляем середину сверху.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "30-2",
+                        new TestParamsBundle(trees[30].projectToTree(), 3, 35),
+                        "[-1, 50, 40, -1, -1, 45, -1, -1, -1, -1, -1, 49, -1, -1, -1, -1]"
+                )
+        );
         //  Берем шаблон 30. Удаляем середину снизу.
-        //  Берем шаблон 30. Удаляем нижний лист слева.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "30-3",
+                        new TestParamsBundle(trees[30].projectToTree(), 3, 45),
+                        "[-1, 50, 35, -1, -1, 45, -1, -1, -1, -1, 40, 49, -1, -1, -1, -1]"
+                )
+        );
+
         //  Берем шаблон 31. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "31-1",
+                        new TestParamsBundle(trees[31].projectToTree(), 3, 50),
+                        "[-1, 35, -1, 45, -1, -1, 40, -1]"
+                )
+        );
         //  Берем шаблон 31. Удаляем середину сверху.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "31-2",
+                        new TestParamsBundle(trees[31].projectToTree(), 3, 35),
+                        "[-1, 50, 40, -1, -1, 45, -1, -1]"
+                )
+        );
         //  Берем шаблон 31. Удаляем середину снизу.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "31-3",
+                        new TestParamsBundle(trees[31].projectToTree(), 3, 45),
+                        "[-1, 50, 35, -1, 40, -1, -1]"
+                )
+        );
         //  Берем шаблон 32. Удаляем корень.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "32-1",
+                        new TestParamsBundle(trees[32].projectToTree(), 3, 50),
+                        "[-1, 60, -1, 75, -1, -1, 70, -1]"
+                )
+        );
         //  Берем шаблон 32. Удаляем середину сверху.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "32-2",
+                        new TestParamsBundle(trees[32].projectToTree(), 3, 75),
+                        "[-1, 50, -1, 65, -1, -1, -1, 70]"
+                )
+        );
         //  Берем шаблон 32. Удаляем середину снизу.
+        tr.append(new YTestCase<String, TestParamsBundle>(
+                        "32-3",
+                        new TestParamsBundle(trees[32].projectToTree(), 3, 65),
+                        "[-1, 50, -1, 75, -1, -1, 70, -1]"
+                )
+        );
         //  Берем шаблон 33. Удаляем корень.
         //  Берем шаблон 33. Удаляем середину сверху.
         //  Берем шаблон 33. Удаляем середину снизу.
