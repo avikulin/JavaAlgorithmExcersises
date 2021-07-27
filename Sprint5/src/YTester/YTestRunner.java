@@ -2,8 +2,7 @@ package YTester;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 /**
  * Base class for bath test-case execution/
@@ -46,10 +45,21 @@ public class YTestRunner<T, R> implements Runnable {
         testCaseList.add(testCase);
     }
 
+    private List<YTestCase<T, R>> createTestPlan(Set<String> testCaseSubSet){
+        if (testCaseSubSet == null) return testCaseList;
+
+        List<YTestCase<T, R>> res = new ArrayList<>();
+        for (YTestCase<T, R> testCase: testCaseList){
+            if (testCaseSubSet.contains(testCase.Id))
+                res.add(testCase);
+        }
+        return res;
+    }
+
     /**
      * Run test-plan in batch execution.
      */
-    public void run() {
+    public void executeTestPlan(Set<String> testCaseSubSet) {
         StringBuilder sb = new StringBuilder();
         String templateOK = "#%d\tresult - Ok\t(time spent: %d ms)\r\n";
         String templateErr = "#%d\tresult - Error\tyour answer - %s\tright answer - %s\t(time spent: %d ms)\r\n";
@@ -60,17 +70,17 @@ public class YTestRunner<T, R> implements Runnable {
 //        System.out.println("[Press ENTER to start]\n");
 //        Scanner scan = new Scanner(System.in);
 //        scan.nextLine();
-
-        for (YTestCase<T, R> testCase : testCaseList) {
+        List<YTestCase<T, R>> testPlan = createTestPlan(testCaseSubSet);
+        for (YTestCase<T, R> testCase : testPlan) {
             counter++;
 
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
 
             try {
               T  res = funcToInvoke.apply(testCase.input);
 
-              long endTime = System.currentTimeMillis();
-              long timeSpan = endTime - startTime;
+              long endTime = System.nanoTime();
+              long timeSpan = (endTime - startTime)/1_000_000; //in milliseconds
 
               String logItem;
               if (!this.funcCompare.compare(testCase.expectedResult, res)) {
@@ -111,5 +121,14 @@ public class YTestRunner<T, R> implements Runnable {
 
         System.out.println(sb.toString());
 //        scan.nextLine();
+    }
+
+    public void run(String[] testCaseIDs){
+        Set<String> IDs = new HashSet<>(Arrays.asList(testCaseIDs));
+        executeTestPlan(IDs);
+    }
+
+    public void run(){
+        executeTestPlan(null);
     }
 }

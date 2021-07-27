@@ -8,10 +8,10 @@ package YTester;
  * @param <R> Type of the result dataset
  */
 public class YTestCase<T, R> {
-    String Id;
+    final String Id;
     Boolean hasId = false;
-    R input;
-    T expectedResult;
+    final R input;
+    final T expectedResult;
 
 
     /**

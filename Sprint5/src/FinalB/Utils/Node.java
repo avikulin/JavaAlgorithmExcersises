@@ -1,5 +1,8 @@
 package FinalB.Utils;
 
+/**
+ * Реализация класса узла дерева, описанная в задании.
+ */
 public class Node {
     private Node left;
     private Node right;

@@ -2,13 +2,20 @@ package FinalB.Tests;
 
 import FinalB.Utils.Node;
 import FinalB.Utils.TreeBuilder;
-import com.sun.source.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TreeBuilderTests {
+/**
+ * Внутренние тесты компонента TreeBuilder.
+ */
+public class TreeBuilderInternalTests {
+    private static final String templatePassed = "%d) test passed.";
+    private static final String templateFailed = "%d) test failed. Trees has been constructed are not equal:\n" +
+            "\t tree one - %s,\n" +
+            "\t tree two - %s.";
+
     public static void main(String[] args) {
         System.out.println("\n*** TREE BUILDER INTERNAL TESTS ***\n");
 
@@ -18,11 +25,6 @@ public class TreeBuilderTests {
         cases.add(new Integer[]{-1, 1, -1, 3, -1, -1, 6, 7, -1, -1, -1, -1, 12, 13});
 
         System.out.println("[ Testing different modes of constructor ]");
-
-        String templatePassed = "%d) test passed.";
-        String templateFailed = "%d) test failed. Trees has been constructed are not equal:\n" +
-                "\t tree one - %s,\n" +
-                "\t tree two - %s.";
 
 
         for (int i = 0; i < cases.size(); i++) {
@@ -82,10 +84,6 @@ public class TreeBuilderTests {
         System.out.println("\t\tTree view: ");
         System.out.println(tb2.getTreeHierarchyView());
 
-
-        int[] a = tb1.getFlattedTreeValues();
-        int[] b = tb2.getFlattedTreeValues();
-
         if (Arrays.equals(tb1.getFlattedTreeValues(), tb2.getFlattedTreeValues()))
             System.out.println(String.format(templatePassed, 3));
         else
@@ -106,7 +104,6 @@ public class TreeBuilderTests {
             System.out.println(String.format(templatePassed, 5));
         else
             System.out.println(String.format(templateFailed, 5, tb1.getTreeSignature(), tb4.getTreeSignature()));
-
 
         System.out.println("\n[ Testing the equality operator ]");
         TreeBuilder tb5 = new TreeBuilder(new int[]{-1, 50, 35, 75});
