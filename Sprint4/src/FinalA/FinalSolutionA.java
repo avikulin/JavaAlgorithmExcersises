@@ -1,4 +1,4 @@
-//---код посылки в Яндекс.Контест - 51188206
+//---код посылки в Яндекс.Контест - 51230008
 
 package FinalA; // эту строку нужно закомментировать перед отправкой в Яндекс.Контест.
 
@@ -6,8 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.LongAdder;
 
 /*
         ОПИСАНИЕ РЕШЕНИЯ
@@ -117,85 +116,99 @@ import java.util.stream.Collectors;
 
  */
 
+
+/**
+ * Основной класс, реализующий функционал построения индекса и обработки запросов к нему.
+ */
 class FullTextIndex {
     private Map<String, Map<Integer, Integer>> reverseIndexStore;
     private int docsCounter;
-    private final int MAX_ITEMS_IN_RESPONCE = 5;
+    private final int MAX_ITEMS_IN_RESPONSE = 5;
 
     FullTextIndex() {
         reverseIndexStore = new HashMap<>();
         docsCounter = 0;
     }
 
-    private Map<String, Integer> getIndexOfOccurrences(String str) {
-        String[] wordSequence = str.split(" ");
-        return Arrays
-                .stream(wordSequence)
-                .collect(Collectors
-                        .groupingBy(Function.identity(),
-                                Collectors.
-                                        collectingAndThen(Collectors.counting(),
-                                                Long::intValue)));
-    }
-
-    private void constructReverseIndex(Map<String, Integer> occurrenceIdx, int docID) {
-        for (Map.Entry<String, Integer> kv : occurrenceIdx.entrySet()) {
-            Map<Integer, Integer> hitsRate = reverseIndexStore.get(kv.getKey());
-            if (hitsRate == null) {
-                Map<Integer, Integer> newHitsRate = new HashMap<>();
-                newHitsRate.put(docID, kv.getValue());
-                reverseIndexStore.put(kv.getKey(), newHitsRate);
-            } else {
-                hitsRate.put(docID, kv.getValue());
-            }
-        }
-    }
-
-    public void AddDocument(String document) {
+    /**
+     * Построение индекса по содержимому переданного документа.
+     *
+     * @param document Строка содержимого документа.
+     */
+    public void addDocument(String document) {
         docsCounter++;
-        Map<String, Integer> indexOfOccurrence = getIndexOfOccurrences(document);
+        Map<String, LongAdder> indexOfOccurrence = getIndexOfOccurrences(document);
         constructReverseIndex(indexOfOccurrence, docsCounter);
     }
 
-    private void reverseReflection(Map<Integer, Integer> source, Map<Integer, List<Integer>> destination) {
-        for (Map.Entry<Integer, Integer> kv : source.entrySet()) {
-            int keyForReversedMap = kv.getValue();
+    /**
+     * Построение индекса вхождения по уникальным словам переданной входной строки.
+     *
+     * @param str Входная строка, по которой производится индексирование.
+     * @return Структура вида {<слово>:<кол-во вхождений>}
+     */
+    private Map<String, LongAdder> getIndexOfOccurrences(String str){
+        Map<String, LongAdder> res = new HashMap<>();
+        String[] wordSequence = str.split("\\s");
+        for (String word: wordSequence)
+            res.computeIfAbsent(word, key -> new LongAdder()).increment();
+
+        return res;
+    }
+
+    /**
+     * Построение и сохранение обратного индекса по документу.
+     *
+     * @param occurrenceIdx Структура индекса вхождения, построенного по содержимому документа.
+     * @param docID         Код индексируемого документа.
+     */
+    private void constructReverseIndex(Map<String, LongAdder> occurrenceIdx, int docID) {
+        for (Map.Entry<String, LongAdder> kv : occurrenceIdx.entrySet()) {
+            reverseIndexStore
+                    .computeIfAbsent(kv.getKey(), key->new HashMap<>())
+                        .put(docID, kv.getValue().intValue());
+        }
+    }
+
+    /**
+     * Построение обратного (инвертированного) отображения структуры данных индекса:
+     * {1:'a', 2:'б', 3:'a', 4:'б'} -> {'a':[1, 3], 'б':[2, 4]}
+     *
+     * @param source      Исходный индекс {<ключ1>:<значение1>, <ключ2>:<значение1>, ...}
+     * @param destination Инвертированный индекс {<значение1>:[<ключ1>, <ключ2>, ...]}
+     */
+    private void reverseReflection(Map<Integer, LongAdder> source, Map<Integer, List<Integer>> destination) {
+        for (Map.Entry<Integer, LongAdder> kv : source.entrySet()) {
+            int keyForReversedMap = kv.getValue().intValue();
             int valueForReversedMap = kv.getKey();
-            List<Integer> relevantDocsIdSequence = destination.get(keyForReversedMap);
-            if (relevantDocsIdSequence != null) {
-                destination.get(keyForReversedMap).add(valueForReversedMap);
-            } else {
-                List<Integer> docsIdSequence = new ArrayList<>();
-                docsIdSequence.add(valueForReversedMap);
-                destination.put(keyForReversedMap, docsIdSequence);
-            }
+            destination
+                    .computeIfAbsent(keyForReversedMap,ArrayList::new)
+                    .add(valueForReversedMap);
         }
 
     }
 
+    /**
+     * Поиск документов в индексе по критерию релевантности запроса.
+     *
+     * @param query Содержимое строки запроса
+     * @return Строка с номерами документов вида "Док1, Док2, Док3, ... "
+     */
     public String findRelevantDocs(String query) {
-        Map<String, Integer> queryUniqueTokens = getIndexOfOccurrences(query);
-        Map<Integer, Integer> hitsSumRegister = new HashMap<>();
+        Map<String, LongAdder> queryUniqueTokens = getIndexOfOccurrences(query);
+        Map<Integer, LongAdder> hitsSumRegister = new HashMap<>();
 
-        for (Map.Entry<String, Integer> queryToken : queryUniqueTokens.entrySet()) {
+        for (Map.Entry<String, LongAdder> queryToken : queryUniqueTokens.entrySet()) {
             String queryKey = queryToken.getKey();
             Map<Integer, Integer> indexHits = reverseIndexStore.get(queryKey);
-
             if (indexHits != null) { //если слова нет в индексе - пропускаем итерацию цикла и переходим к следующему.
-                Integer hitsValue; //экономим время на создании и инициализации ссылочного типа
                 for (Map.Entry<Integer, Integer> kv : indexHits.entrySet()) {
-                    hitsValue = hitsSumRegister.get(kv.getKey()); //используем Integer как nullable-тип.
-                    if (hitsValue != null) {
-                        hitsValue += kv.getValue();
-                        hitsSumRegister.put(kv.getKey(), hitsValue);
-                    } else {
-                        hitsSumRegister.put(kv.getKey(), kv.getValue());
-                    }
+                    hitsSumRegister.computeIfAbsent(kv.getKey(),key -> new LongAdder()).add(kv.getValue());
                 }
             }
         }
 
-        //тут важен порядок элементов - поэтому TreeMap.
+        // Тут важен порядок элементов - поэтому TreeMap.
         // За сохранение порядка платим логарифмическим временем доступа.
         Map<Integer, List<Integer>> relevantDocsIdx = new TreeMap<>(Collections.reverseOrder());
         reverseReflection(hitsSumRegister, relevantDocsIdx);
@@ -208,30 +221,48 @@ class FullTextIndex {
             for (int id : docsIdSequence) {
                 responseBuilder.add(String.valueOf(id));
                 responseItemCounter++;
-                if (responseItemCounter == MAX_ITEMS_IN_RESPONCE) return responseBuilder.toString();
+                if (responseItemCounter == MAX_ITEMS_IN_RESPONSE) return responseBuilder.toString();
             }
         }
         return responseBuilder.toString();
     }
 }
 
+/**
+ * Основной класс решения и точка входа в него.
+ */
 public class FinalSolutionA {
+    /**
+     * Функция приема и обработки входных параметров
+     *
+     * @param inputSequence Массив строкового представления входных параметров.
+     * @return Строковое представление результата.
+     */
     public static String processQueries(String[] inputSequence) {
         FullTextIndex indexManager = new FullTextIndex();
         int numOfDocs = Integer.parseInt(inputSequence[0]);
 
         for (int i = 1; i < numOfDocs + 1; i++)
-            indexManager.AddDocument(inputSequence[i]);
+            indexManager.addDocument(inputSequence[i]);
 
         StringJoiner responseBuilder = new StringJoiner("\n");
         int numOfQueries = Integer.parseInt(inputSequence[numOfDocs + 1]);
         for (int i = numOfDocs + 2; i < numOfDocs + numOfQueries + 2; i++) {
             String res = indexManager.findRelevantDocs(inputSequence[i]);
-            if (!res.equals("")) responseBuilder.add(res);
+            if (res != "")
+                responseBuilder.add(res);
         }
         return responseBuilder.toString();
     }
 
+    /**
+     * Точка входа в программу.
+     * Зачитываение входных параметров из консоли.
+     * Вывод результатов работы программы в консоль.
+     *
+     * @param args Аргументы командной строки (для целей совместимости).
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         int numOfDocs = Integer.parseInt(reader.readLine());
