@@ -1,8 +1,9 @@
+//---Номер посылки в Яндекс.Контест - 52253724
+
 package FinalB;             // -- эту строку нужно закомментировать перед отправкой в Яндекс.Контест
 
 import FinalB.Utils.Node;   // -- эту строку нужно закомментировать перед отправкой в Яндекс.Контест
 
-import java.util.Stack;
 /*
  *  - ОПИСАНИЕ АЛГОРИТМА -
  * Структурно, алгоритм состоит из следующих основных шагов:
@@ -65,7 +66,7 @@ import java.util.Stack;
  *                  в3-1-1) удаляемый узел заменяется приемником
  *                  в3-1-2) левое поддерево удаленного узла подключается левым поддеревом к примнику.
  *
- *             Суммарные пространственная и временная асимптотики шагов (в3-1-1)...(в3-1-2) соответствуют O(1).
+ *              Суммарные пространственная и временная асимптотики шагов (в3-1-1)...(в3-1-2) соответствуют O(1).
  *
  *              в3-2) между удаляемым узлом и приемником существует путь в дереве.
  *
@@ -90,14 +91,15 @@ import java.util.Stack;
  *                  в3-2-3) левое поддерево удаленного узла подключается левым поддеревом к примнику.
  *                  в3-2-4) правое поддерево удаленного узла подключается правым поддеревом к примнику.
  *
- *             Суммарные пространственная и временная асимптотики шагов (в3-2-1)...(в3-2-4) соответствуют O(1).
+ *              Суммарные пространственная и временная асимптотики шагов (в3-2-1)...(в3-2-4) соответствуют O(1).
  *
  *         ИТОГО ПО ШАГУ 2-в):
- *              ВРЕМЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(Log(H-1)) +  МАX ( O(1), O(1), O(1) ) = O(Log(H))
- *              ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ (в худшем случае):  O(1) + O(1) + МАX ( O(1), O(1) ) = O(1)
+ *              ВРЕМЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(Log(H-1)) + O(1) + МАX (O(1), O(1)) = O(Log(H))
+ *              ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ (в худшем случае):  O(1) + O(1) + МАX (O(1), O(1)) = O(1)
  *
- *  ВРЕМЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(1) + O(1) + O(Log(H)) = O(Log(H)), где H - высота дерева.
- *  ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(1) + O(1) + O(1) = O(1)
+ *  ИТОГО ПО ШАГУ 2):
+ *      ВРЕМЕННАЯ СЛОЖНОСТЬ (в худшем случае): МАХ (O(1), O(1), O(Log(H)) = O(Log(H)), где H - высота дерева.
+ *      ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ (в худшем случае): МАХ (O(1), O(1), O(1)) = O(1)
  *
  *  3) возвращается корень нового дерева (выполняется функцией <replaceNode(...)>):
  *      а) если удаляемый узел не был корнем дерева, то возвращается ссылка на корневой узел исходного дерева.
@@ -107,13 +109,8 @@ import java.util.Stack;
  *  ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(1)
  *
  *  -ИТОГОВЫЙ РАСЧЕТ СЛОЖНОСТИ АЛГОРИТМА-
- *  ВРЕМЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(Log(H)) + O(1) + O(1) + O(H) = O(H), где H - высота дерева.
- *  ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(1) + O(1) + O(1) = O(1)*
- *
- *
- *
- *
- *
+ *  ВРЕМЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(Log(H)) + O(Log(H)) + O(1) = O(Log(H)), где H - высота дерева.
+ *  ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ (в худшем случае): O(1) + O(1) + O(1) = O(1)
  *
  */
 
@@ -233,9 +230,6 @@ public class Solution {
         if (nodeInfo == null) // для несуществующего узла - замены не существует.
             return new NodeInfo(null, null, Position.NULL);
 
-        Stack<Node> nodeStack = new Stack<>();
-
-
         // если у узла нет потомков, - значит нет и приемников. Возвращаем NULL по умолчанию.
         Node resNode = null;
         Node resParent = null;
@@ -255,16 +249,13 @@ public class Solution {
         }
         if (nodeInfo.getNumberOfSuccessors() == 2) {
             // если у узла 2 потомка - то ищем минимальный элемент в правом поддереве. Он и будет приемником.
-            nodeStack.push(nodeInfo.getNode().getRight());
+            resNode = nodeInfo.getNode().getRight();
             resParent = nodeInfo.getNode();
             position = Position.RIGHT;
-            while (!nodeStack.empty()) {
-                resNode = nodeStack.pop();
-                if (resNode.getLeft() != null) {
-                    nodeStack.push(resNode.getLeft());
-                    resParent = resNode;
-                    position = Position.LEFT;
-                }
+            while (resNode.getLeft() != null) {
+                resParent = resNode;
+                resNode = resNode.getLeft();
+                position = Position.LEFT;
             }
         }
         return new NodeInfo(resParent, resNode, position);
@@ -333,56 +324,6 @@ public class Solution {
     }
 
     /**
-     * Удаление листового узла дерева.
-     *
-     * @param root         Ссылка на корневой узел дерева.
-     * @param nodeToDelete Ссылка на метаданные удаляемого узла.
-     * @return Ссылка на корневой узел дерева, полученного после выполнения операции удаления.
-     */
-    private static Node deleteLeafNode(Node root, NodeInfo nodeToDelete) {
-        return replaceNode(root, nodeToDelete, new NodeInfo(null, null, Position.NULL));
-    }
-
-    /**
-     * Удаление узла дерева, у которого есть один подчиненный узел.
-     *
-     * @param root         Ссылка на корневой узел дерева.
-     * @param nodeToDelete Ссылка на метаданные удаляемого узла.
-     * @param newNode      Ссылка на метаданные узла, которым замещается удаляемый узел.
-     * @return Ссылка на корневой узел дерева, полученного после выполнения операции удаления.
-     */
-    private static Node cutNodeWithOneChild(Node root, NodeInfo nodeToDelete, NodeInfo newNode) {
-        return replaceNode(root, nodeToDelete, newNode);
-    }
-
-    /**
-     * Удаление узла дерева, у которого есть два подчиненных узла.
-     *
-     * @param root         Ссылка на корневой узел дерева.
-     * @param nodeToDelete Ссылка на метаданные удаляемого узла.
-     * @param newNode      Ссылка на метаданные узла, которым замещается удаляемый узел.
-     * @return Ссылка на корневой узел дерева, полученного после выполнения операции удаления.
-     */
-    private static Node cutNodeWithTwoChildren(Node root, NodeInfo nodeToDelete, NodeInfo newNode) {
-        Node rightChildOfDeletingNode = nodeToDelete.getNode().getRight();
-        Node leftChildOfDeletingNode = nodeToDelete.getNode().getLeft();
-        Node rightChildOfNewNode = newNode.getNode().getRight();
-
-        Node possiblyNewRoot = replaceNode(root, nodeToDelete, newNode);
-
-        // если newNode является прямым правым потомком nodeToDelete.
-        if (rightChildOfDeletingNode == newNode.getNode()) {
-            newNode.getNode().setLeft(leftChildOfDeletingNode);
-        } else {
-            // если между newNode и nodeToDelete существует путь.
-            newNode.getParent().setLeft(rightChildOfNewNode);
-            newNode.getNode().setLeft(leftChildOfDeletingNode);
-            newNode.getNode().setRight(rightChildOfDeletingNode);
-        }
-        return possiblyNewRoot;
-    }
-
-    /**
      * Трассировка операции удаления узла дерева. Используется для отладочного вывода.
      *
      * @param root Ссылка на корневой узел дерева.
@@ -416,17 +357,34 @@ public class Solution {
         if (nodeToDelete.getNode() == null) return root; //удалять нечего. дерево не изменилось.
         switch (nodeToDelete.getNumberOfSuccessors()) {
             case 0: {
-                res = deleteLeafNode(root, nodeToDelete);
+                res = replaceNode(root, nodeToDelete, new NodeInfo(null, null, Position.NULL));
                 break;
             }
             case 1: {
                 NodeInfo replacementNode = searchForPossibleReplacement(nodeToDelete);
-                res = cutNodeWithOneChild(root, nodeToDelete, replacementNode);
+                res = replaceNode(root, nodeToDelete, replacementNode);
                 break;
             }
             case 2: {
                 NodeInfo replacementNode = searchForPossibleReplacement(nodeToDelete);
-                res = cutNodeWithTwoChildren(root, nodeToDelete, replacementNode);
+
+                Node rightChildOfDeletingNode = nodeToDelete.getNode().getRight();
+                Node leftChildOfDeletingNode = nodeToDelete.getNode().getLeft();
+                Node rightChildOfNewNode = replacementNode.getNode().getRight();
+
+                Node possiblyNewRoot = replaceNode(root, nodeToDelete, replacementNode);
+
+                // если newNode является прямым правым потомком nodeToDelete.
+                if (rightChildOfDeletingNode == replacementNode.getNode()) {
+                    replacementNode.getNode().setLeft(leftChildOfDeletingNode);
+                } else {
+                    // если между newNode и nodeToDelete существует путь.
+                    replacementNode.getParent().setLeft(rightChildOfNewNode);
+                    replacementNode.getNode().setLeft(leftChildOfDeletingNode);
+                    replacementNode.getNode().setRight(rightChildOfDeletingNode);
+                }
+
+                res = possiblyNewRoot;
                 break;
             }
         }
