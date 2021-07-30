@@ -1,4 +1,4 @@
-//---код посылки в Яндекс.Контест - 51928434
+//---код посылки в Яндекс.Контест - 52256224
 
 package FinalA;// эту строку нужно закомментировать перед отправкой в Яндекс.Контест.
 
@@ -155,7 +155,7 @@ class Participant implements Comparable<Participant> {
      * @param score   Значение счета (количества решенных задач)
      * @param penalty Значение штрафа
      */
-    Participant(String login, Integer score, Integer penalty) {
+    Participant(String login, int score, int penalty) {
         personalLogin = login;
         scoreValue = score;
         penaltyValue = penalty;
@@ -184,39 +184,69 @@ class Participant implements Comparable<Participant> {
             return scoreValue > other.scoreValue ? 1 : -1; // сортировка по возрастанию
         }
         if (penaltyValue != other.penaltyValue) {
-            return penaltyValue < other.penaltyValue ? 1 : -1; // сортировка по возрастанию
+            return penaltyValue < other.penaltyValue ? 1 : -1; // сортировка по убыванию
         }
         return -1 * personalLogin.compareTo(other.personalLogin); // сортировка по возрастанию
     }
 }
 
+/**
+ * Класс-реализация очереди с приоритетами
+ */
 class PriorityQueue implements Iterable<Participant> {
     private final Participant[] flatedHeapStorage;
     private int lastElementPointer;
 
+    /**
+     * Конструктор экземпляра очереди с приоритетами
+     *
+     * @param queueSize Максимальный размер очереди
+     */
     PriorityQueue(int queueSize) {
         flatedHeapStorage = new Participant[queueSize + 1];
         lastElementPointer = 0;
     }
 
+    /**
+     * Добавление элемента в очередь
+     *
+     * @param value Ссылка на объект, добавляемый в очередь
+     */
     public void push(Participant value) {
         lastElementPointer++;
         flatedHeapStorage[lastElementPointer] = value;
         siftUp(lastElementPointer);
     }
 
+    /**
+     * Извлечение элемента из очереди
+     *
+     * @return Ссылка на объект, извлеченный из очереди
+     */
     public Participant pop() {
         Participant res = flatedHeapStorage[1];
         flatedHeapStorage[1] = flatedHeapStorage[lastElementPointer];
+        flatedHeapStorage[lastElementPointer] = null; //очистка дубликата ссылки (чтобы не вводить GC в заблуждение)
         lastElementPointer--;
         siftDown(1);
         return res;
     }
 
+    /**
+     * Получение длины (текущего количество элементов) очереди
+     *
+     * @return Значение длины очереди
+     */
     public int length() {
         return lastElementPointer;
     }
 
+    /**
+     * Обмен значениями двух элементов очереди
+     *
+     * @param idxOne Индекс первого элемента
+     * @param idxTwo Индекс второго элемента
+     */
     private void swap(int idxOne, int idxTwo) {
         if (idxOne == idxTwo) return;
         Participant temp = flatedHeapStorage[idxOne];
@@ -224,23 +254,47 @@ class PriorityQueue implements Iterable<Participant> {
         flatedHeapStorage[idxTwo] = temp;
     }
 
+    /**
+     * Получение индекса родительского элемента
+     *
+     * @param idx Индекс текущего элемента очереди
+     * @return Значение индекса родительского элемента
+     */
     private int getParentIdx(int idx) {
         return idx / 2;
     }
 
-    private int getLeftChild(int headIdx) {
+    /**
+     * Получение индекса левого потомка заданного элемента очереди
+     *
+     * @param headIdx Индекс элемента очереди, потомка которой требуется определить
+     * @return Значение индекса левого потомка
+     */
+    private int getLeftChildIdx(int headIdx) {
         int leftChildIdx = 2 * headIdx;
         return (leftChildIdx <= lastElementPointer) ? leftChildIdx : -1;
     }
 
-    private int getRightChild(int headIdx) {
+    /**
+     * Получение индекса правого потомка заданного элемента очереди
+     *
+     * @param headIdx Индекс элемента очереди, потомка которой требуется определить
+     * @return Значение индекса правого потомка
+     */
+    private int getRightChildIdx(int headIdx) {
         int rightChildIdx = headIdx * 2 + 1;
         return (rightChildIdx <= lastElementPointer) ? rightChildIdx : -1;
     }
 
+    /**
+     * Получение значения индекса максимального потомка заданного элемента очереди
+     *
+     * @param headIdx Значение индекса элемента очереди, с потомками которого работает функция
+     * @return Значение индекса потомка, обладающего максимальным значением
+     */
     private int getMaxChildIdx(int headIdx) {
-        int leftChildIdx = getLeftChild(headIdx);
-        int rightChildIdx = getRightChild(headIdx);
+        int leftChildIdx = getLeftChildIdx(headIdx);
+        int rightChildIdx = getRightChildIdx(headIdx);
 
         if ((leftChildIdx == -1) && (rightChildIdx == -1)) return -1;
 
@@ -252,6 +306,12 @@ class PriorityQueue implements Iterable<Participant> {
                         .compareTo(flatedHeapStorage[rightChildIdx]) > 0) ? leftChildIdx : rightChildIdx;
     }
 
+    /**
+     * Получение индекса потомка, с которым нужно обменять местами текущий элемент для восстановления порядка очереди
+     *
+     * @param headIdx Индекс текущего элемента очереди, потомки которого анализируются функцией
+     * @return Индекс потомка, который нарушает порядок очереди
+     */
     private int getIdxToSwap(int headIdx) {
         int maxChildIdx = getMaxChildIdx(headIdx);
 
@@ -262,6 +322,11 @@ class PriorityQueue implements Iterable<Participant> {
         return (flatedHeapStorage[headIdx].compareTo(flatedHeapStorage[maxChildIdx]) > 0) ? headIdx : maxChildIdx;
     }
 
+    /**
+     * Рекуррентное просеивание элементов очереди сверху вниз с восстановление порядка элементов
+     *
+     * @param idx Индекс элемента, потомки которого должны быть обработаны функцией
+     */
     private void siftDown(int idx) {
         int idxToSwap = getIdxToSwap(idx);
         if (idxToSwap == idx) return; // базовый случай.
@@ -270,21 +335,35 @@ class PriorityQueue implements Iterable<Participant> {
         siftDown(idxToSwap); // рекуррентный случай.
     }
 
+    /**
+     * Рекуррентное просеивание элементов очереди снизу вверх с восстановление порядка элементов
+     *
+     * @param idx Индекс элемента, родители (всех уровней) которого должны быть обработаны функцией
+     */
     private void siftUp(int idx) {
-        if (idx == 1) return;
+        if (idx == 1) return; //базовый случай
+
         int parentNodeIdx = getParentIdx(idx);
         if (flatedHeapStorage[parentNodeIdx].compareTo(flatedHeapStorage[idx]) < 0) {
             swap(parentNodeIdx, idx);
-            siftUp(parentNodeIdx);
+            siftUp(parentNodeIdx); //рекуррентный случай
         }
     }
 
+    /**
+     * Получение итератора очереди, для последовательного извлечения ее элементов
+     *
+     * @return Ссылка на объект-итератор
+     */
     @Override
     public Iterator<Participant> iterator() {
         return new PrioryQueueIterator(this);
     }
 }
 
+/**
+ * Класс-итератор для очереди с приоритетами
+ */
 class PrioryQueueIterator implements Iterator<Participant> {
     private final PriorityQueue obj;
 
@@ -303,7 +382,16 @@ class PrioryQueueIterator implements Iterator<Participant> {
     }
 }
 
+/**
+ * -ОСНОВНОЙ КЛАСС ЗАПУСКА АЛГОРИТМА-
+ */
 public class FinalSolutionA {
+    /**
+     * Функция-драйвер. Используется для единой точки запуска алгоритма.
+     *
+     * @param input Коллекия входных строковых параметров
+     * @return Строковое представление (с переносами) результата работы алгоритма
+     */
     public static String process(String[] input) {
         StringJoiner stringJoiner = new StringJoiner("\n");
         PriorityQueue participants = new PriorityQueue(input.length);
@@ -323,6 +411,12 @@ public class FinalSolutionA {
         return stringJoiner.toString();
     }
 
+    /**
+     * Точка входа в программу
+     *
+     * @param args Аргументы коммандной строки (для целей совместимости)
+     * @throws IOException Возможны исключения ввода-вывода
+     */
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         int numberOfRows = Integer.parseInt(reader.readLine());
