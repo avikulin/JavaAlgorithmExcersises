@@ -1,23 +1,23 @@
-//package ProblemA;
+package ProblemA;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
-class Graph implements Iterable<Edge>{
+class Graph implements Iterable<Edge> {
     private TreeMap<Integer, Set<Integer>> graphStorage;
     private int maxEdges;
     private int numberOfEdges;
     private boolean isOriented;
 
-    public Graph(int vertexCount, int edgesCount, boolean oriented){
+    public Graph(int vertexCount, int edgesCount, boolean oriented) {
         graphStorage = new TreeMap<>();
         maxEdges = edgesCount;
         numberOfEdges = 0;
         isOriented = oriented;
 
-        for(int i=1; i<= vertexCount; i++)
+        for (int i = 1; i <= vertexCount; i++)
             graphStorage.put(i, new TreeSet<>());
     }
 
@@ -39,20 +39,30 @@ class Graph implements Iterable<Edge>{
     }
 }
 
-class Edge{
+class Edge {
     int vertexA;
     int vertexB;
-    public Edge(int a, int b){
+
+    public Edge(int a, int b) {
         vertexA = a;
         vertexB = b;
     }
-    public int getVertexA() {return vertexA;}
-    public int getVertexB() {return vertexB;}
+
+    public int getVertexA() {
+        return vertexA;
+    }
+
+    public int getVertexB() {
+        return vertexB;
+    }
+
     @Override
-    public String toString() {return String.format("%d %d", vertexA, vertexB); }
+    public String toString() {
+        return String.format("%d %d", vertexA, vertexB);
+    }
 }
 
-class EdgeIterator implements Iterator<Edge>{
+class EdgeIterator implements Iterator<Edge> {
     private TreeMap<Integer, Set<Integer>> graphVertexStorage;
     private Iterator<Map.Entry<Integer, Set<Integer>>> vertexIterator;
     private Iterator<Integer> edgeIterator;
@@ -61,7 +71,7 @@ class EdgeIterator implements Iterator<Edge>{
     private int vertexB;
     private int linearPosition;
 
-    public EdgeIterator(TreeMap<Integer, Set<Integer>> vertexStorage){
+    public EdgeIterator(TreeMap<Integer, Set<Integer>> vertexStorage) {
         graphVertexStorage = vertexStorage;
         vertexIterator = graphVertexStorage.entrySet().iterator();
         edgeIterator = null;
@@ -70,13 +80,21 @@ class EdgeIterator implements Iterator<Edge>{
         linearPosition = 0;
     }
 
-    public int getCurrentMainSequenceLength(){ return graphVertexStorage.size(); }
-    public int getCurrentSubSequenceLength(){ return currentVertexEdges.getValue().size();}
-    public int getAbsolutePosition(){return linearPosition;}
+    public int getCurrentMainSequenceLength() {
+        return graphVertexStorage.size();
+    }
+
+    public int getCurrentSubSequenceLength() {
+        return currentVertexEdges.getValue().size();
+    }
+
+    public int getAbsolutePosition() {
+        return linearPosition;
+    }
 
     @Override
     public boolean hasNext() {
-        if ((edgeIterator == null)||(!edgeIterator.hasNext())) {
+        if ((edgeIterator == null) || (!edgeIterator.hasNext())) {
             return vertexIterator.hasNext();
         }
         return edgeIterator.hasNext();
@@ -84,7 +102,7 @@ class EdgeIterator implements Iterator<Edge>{
 
     @Override
     public Edge next() {
-        if ((edgeIterator==null)||(!edgeIterator.hasNext())) {
+        if ((edgeIterator == null) || (!edgeIterator.hasNext())) {
             currentVertexEdges = vertexIterator.next();
             vertexA = currentVertexEdges.getKey();
             edgeIterator = currentVertexEdges.getValue().iterator();
@@ -97,7 +115,7 @@ class EdgeIterator implements Iterator<Edge>{
 
 public class SolutionA {
 
-    public static String process(String[] input) throws RuntimeException{
+    public static String process(String[] input) throws RuntimeException {
         String mainParams = input[0];
         StringTokenizer mainParamsTokens = new StringTokenizer(mainParams);
 
@@ -105,7 +123,7 @@ public class SolutionA {
         int edgeCount = Integer.parseInt(mainParamsTokens.nextToken());
 
         Graph graph = new Graph(vertexCount, edgeCount, true);
-        for (int i=1; i < input.length; i++){
+        for (int i = 1; i < input.length; i++) {
             StringTokenizer edgeParamsTokens = new StringTokenizer(input[i]);
             int vertexA = Integer.parseInt(edgeParamsTokens.nextToken());
             int vertexB = Integer.parseInt(edgeParamsTokens.nextToken());
@@ -114,10 +132,10 @@ public class SolutionA {
 
         StringJoiner res = new StringJoiner("\n");
         Iterator<Map.Entry<Integer, Set<Integer>>> adjListMainIterator = graph.getMainVertexIterator();
-        while (adjListMainIterator.hasNext()){
+        while (adjListMainIterator.hasNext()) {
             Map.Entry<Integer, Set<Integer>> graphAdjointList = adjListMainIterator.next();
             int listSize = graphAdjointList.getValue().size();
-            if (listSize>0) {
+            if (listSize > 0) {
                 StringJoiner joiner = new StringJoiner(" ");
                 Iterator<Integer> endVertexIterator = graphAdjointList.getValue().iterator();
                 joiner.add(String.valueOf(listSize));
@@ -141,7 +159,7 @@ public class SolutionA {
 
         String[] input = new String[numberOfEdges + 1];
         input[0] = params;
-        for (int i=1; i <= numberOfEdges; i++)
+        for (int i = 1; i <= numberOfEdges; i++)
             input[i] = reader.readLine();
         System.out.println(process(input));
     }
