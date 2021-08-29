@@ -5,146 +5,83 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
-class Graph implements Iterable<Vertex> {
-    private final TreeMap<Vertex, Set<Vertex>> graphStorage;
-    private final Vertex[] vertexStorage;
-    private int numberOfComponents;
+class Graph {
+    private final List<Integer>[] graphStorage;
+    private final int[] vertexComponentMarker;
     private final boolean isOriented;
-    private int colorOfCollectedVertexes;
 
-    private Vertex startVertex;
 
     public Graph(int vertexCount, int edgesCount, boolean oriented) {
-        graphStorage = new TreeMap<>();
-        vertexStorage = new Vertex[vertexCount + 1];
+        graphStorage = new List[vertexCount + 1];
+        vertexComponentMarker = new int[vertexCount + 1];
         isOriented = oriented;
-        startVertex = null;
-        numberOfComponents = 0;
-        colorOfCollectedVertexes = 0;
     }
 
-    public String getComponentsSignatureString(){
-        StringJoiner res = new StringJoiner("\n");
-
-        for(int idx=1; idx < vertexStorage.length; idx++) {
-            StringJoiner subRes = new StringJoiner(" ");
-            // ищем первую (непокрашенную) вершину следующего компонента связности.
-            if (vertexStorage[idx]==null) {
-                numberOfComponents++;
-                subRes.add(String.valueOf(idx));
-                res.add(subRes.toString());
-                continue;
-            }
-
-            if (!vertexStorage[idx].hasColor()) {
-                numberOfComponents++;
-                setStartVertex(vertexStorage[idx]);
-                //обходим все вершины компонента связности, начиная с заданной
-                for (Vertex vertex : this) {
-                    vertex.setVertexColor(numberOfComponents);
-                    subRes.add(String.valueOf(vertex.getId()));
+    private void exploreVerticesDFS(int startVertex, int markerCode){
+        Stack<Integer> vertexQueue = new Stack<>();
+        Set<Integer> visitedVertices = new HashSet<>();
+        vertexQueue.push(startVertex);
+        while (!vertexQueue.isEmpty()) {
+            int currentVertexId = vertexQueue.pop();
+            visitedVertices.add(currentVertexId);
+            vertexComponentMarker[currentVertexId] = markerCode;
+            if (graphStorage[currentVertexId] != null) {
+                List<Integer> adjVertices = graphStorage[currentVertexId];
+                Iterator<Integer> it = adjVertices.iterator();
+                while (it.hasNext()) {
+                    int vertexId=it.next();
+                    if (!visitedVertices.contains(vertexId)) {
+                        vertexQueue.add(vertexId);
+                    }
                 }
-                // добавляем вершины найденного компонента связности в коллекцию
-                if (subRes.length()!=0)
-                    res.add(subRes.toString());
+                it = null;
             }
         }
-        String numComponents = String.valueOf(numberOfComponents);
-        return numComponents + "\n" + res.toString();
+
+        vertexQueue = null;
+        visitedVertices = null;
     }
 
-    private Vertex getVertex(int idx){
-        if (vertexStorage[idx]==null) {
-            Vertex v = new Vertex(idx);
-            vertexStorage[idx] = v;
-            return v;
+    public String getComponentsSignatureString() {
+        int numberOfComponents = 0;
+        for (int idx = 1; idx < vertexComponentMarker.length; idx++) {
+            // search for next unmarked vertex
+            if (vertexComponentMarker[idx] == 0) {
+                numberOfComponents++;
+                // depth-first iterating through linked vertexes
+                exploreVerticesDFS(idx, numberOfComponents);
+            }
         }
-        return  vertexStorage[idx];
+
+        StringJoiner[] subRes = new StringJoiner[numberOfComponents+1];
+        subRes[0] = null;
+        for (int idx = 1; idx < vertexComponentMarker.length; idx++) {
+            int componentIdx = vertexComponentMarker[idx];
+            if (subRes[componentIdx]==null)
+                subRes[componentIdx] = new StringJoiner(" ");
+                subRes[componentIdx].add(String.valueOf(idx));
+        }
+        StringJoiner res = new StringJoiner("\n");
+        res.add(String.valueOf(numberOfComponents));
+        for (int i=1; i<numberOfComponents + 1;i++){
+            res.add(subRes[i].toString());
+            subRes[i] = null;
+
+        }
+        return res.toString();
     }
 
-    public void AddEdge(int idA, int idB){
-        Vertex v1 = getVertex(idA);
-        Vertex v2 = getVertex(idB);
-        graphStorage.putIfAbsent(v1,new TreeSet<>());
-        graphStorage.get(v1).add(v2);
+    public void AddEdge(int idA, int idB) {
+        if (graphStorage[idA] == null)
+            graphStorage[idA] = new ArrayList<>();
 
+        graphStorage[idA].add(idB);
         if (!isOriented) {
-            graphStorage.putIfAbsent(v2,new TreeSet<>());
-            graphStorage.get(v2).add(v1);
+            if (graphStorage[idB] == null)
+                graphStorage[idB] = new ArrayList<>();
+
+            graphStorage[idB].add(idA);
         }
-    }
-
-    public void setStartVertex(Vertex vertex) {startVertex = vertex;}
-
-    @Override
-    public Iterator<Vertex> iterator() {
-        return new DepthFirstIterator(this.graphStorage, startVertex, colorOfCollectedVertexes);
-    }
-}
-
-class Vertex implements Comparable<Vertex>{
-    private final int Id;
-    private int vertexColor;
-    private boolean colored;
-    Vertex(int ID){
-        Id = ID;
-        vertexColor = 0;
-        colored = false;
-    }
-    public int getId() {return Id;}
-    public void setVertexColor(int value) {colored = true; vertexColor = value;}
-    public boolean hasColor(){return colored;}
-
-    @Override
-    public int compareTo(Vertex o) {
-        if (Id == o.Id) return 0;
-        return Id > o.Id ? 1: -1;
-    }
-}
-
-class DepthFirstIterator implements Iterator<Vertex> {
-    private final TreeMap<Vertex, Set<Vertex>> graphVertexStorage;
-    private final Stack<Vertex> vertexQueue;
-    private Vertex currentVertex;
-    int colorForVisitedVertex;
-
-    public DepthFirstIterator(TreeMap<Vertex, Set<Vertex>> vertexStorage, Vertex startVertx, int colorOfCollectedVertexes) {
-        graphVertexStorage = vertexStorage;
-        vertexQueue = new Stack<>();
-        vertexQueue.add(startVertx);
-        currentVertex = null;
-        colorForVisitedVertex = colorOfCollectedVertexes;
-//        System.out.println(String.format("New iteration: from %d", startVertx.getId()));
-    }
-
-    @Override
-    public boolean hasNext() {
-        return !vertexQueue.isEmpty();
-    }
-
-    @Override
-    public Vertex next() {
-        currentVertex = vertexQueue.pop();
-//        System.out.println(String.format("\tvertex %d", currentVertex.getId()));
-        currentVertex.setVertexColor(colorForVisitedVertex);
-
-        Set<Vertex> adjVertexes = graphVertexStorage.get(currentVertex);
-        Iterator<Vertex> reverseIterator = ((TreeSet<Vertex>)adjVertexes).descendingIterator();
-
-        while (reverseIterator.hasNext()){
-            Vertex vertex = reverseIterator.next();
-            if (!vertex.hasColor()) {
-                vertexQueue.add(vertex);
-            }
-        }
-
-        // очистка очереди от посещенных узлов
-        while ((!vertexQueue.empty()) && vertexQueue.peek().hasColor()){
-            Vertex v = vertexQueue.pop();
-//            System.out.println(String.format("\t\tcleared %d", v.getId()));
-        }
-
-        return currentVertex;
     }
 }
 
@@ -156,30 +93,114 @@ public class SolutionE {
 
         int vertexCount = Integer.parseInt(mainParamsTokens.nextToken());
         int edgeCount = Integer.parseInt(mainParamsTokens.nextToken());
+        mainParamsTokens = null;
 
         Graph graph = new Graph(vertexCount, edgeCount, false);
         for (int i = 1; i < edgeCount + 1; i++) {
             StringTokenizer edgeParamsTokens = new StringTokenizer(input[i]);
             int vertexA = Integer.parseInt(edgeParamsTokens.nextToken());
             int vertexB = Integer.parseInt(edgeParamsTokens.nextToken());
+            edgeParamsTokens = null;
             graph.AddEdge(vertexA, vertexB);
         }
-
         return graph.getComponentsSignatureString();
     }
 
-    private static void profile(){
-        while (true){
-            process(new String[]{
-                    "6 3",
-                    "1 2",
-                    "6 5",
-                    "2 3"
-            });
+    private static void profile(String[] p) {
+        while (true) {
+            process(p);
         }
     }
+
     public static void main(String[] args) throws IOException {
-//        profile();
+        /*String[] p = new String[]{  "80929 86",
+                                    "43022 60397" ,
+                                    "37953 36846" ,
+                                    "44772 36751" ,
+                                    "28376 77977" ,
+                                    "17404 32156" ,
+                                    "77202 37034" ,
+                                    "47257 25410" ,
+                                    "17761 61364" ,
+                                    "51297 77323" ,
+                                    "15278 48992" ,
+                                    "73180 57545" ,
+                                    "61334 27119" ,
+                                    "24974 21611" ,
+                                    "11155 17497" ,
+                                    "71561 13406" ,
+                                    "10407 22203" ,
+                                    "9370 73109" ,
+                                    "24738 74874" ,
+                                    "45338 28136" ,
+                                    "15177 40995" ,
+                                    "5002 69405" ,
+                                    "2041 26838" ,
+                                    "25065 12" ,
+                                    "51572 9547" ,
+                                    "2282 49566" ,
+                                    "17010 52117" ,
+                                    "74109 958" ,
+                                    "19716 53771" ,
+                                    "43496 62596" ,
+                                    "57146 46667" ,
+                                    "10661 17482" ,
+                                    "51269 50703" ,
+                                    "74222 3429" ,
+                                    "7414 59914" ,
+                                    "43084 73585" ,
+                                    "38138 11174" ,
+                                    "70901 48050" ,
+                                    "71826 10851" ,
+                                    "17695 59340" ,
+                                    "42426 32451" ,
+                                    "72033 77584" ,
+                                    "58263 76727" ,
+                                    "70716 18563" ,
+                                    "77979 77903" ,
+                                    "71202 69116" ,
+                                    "12460 71032" ,
+                                    "17909 5878" ,
+                                    "55100 75709" ,
+                                    "53218 32965" ,
+                                    "38928 13202" ,
+                                    "53521 24544" ,
+                                    "11242 38956" ,
+                                    "626 25446" ,
+                                    "18064 30238" ,
+                                    "40269 49608" ,
+                                    "11004 16139" ,
+                                    "2763 26878" ,
+                                    "32647 33744" ,
+                                    "6692 44226" ,
+                                    "30583 76168" ,
+                                    "62560 16379" ,
+                                    "38535 56028" ,
+                                    "6107 47588" ,
+                                    "49447 69564" ,
+                                    "62570 57878" ,
+                                    "18410 56018" ,
+                                    "29765 48779" ,
+                                    "49704 10024" ,
+                                    "8304 13266" ,
+                                    "11437 13825" ,
+                                    "27526 35557" ,
+                                    "56906 45737" ,
+                                    "46577 36807" ,
+                                    "21942 76536" ,
+                                    "77516 42437" ,
+                                    "39877 32550" ,
+                                    "10663 30656" ,
+                                    "32221 7373" ,
+                                    "25791 47907" ,
+                                    "71493 28624" ,
+                                    "11896 37043" ,
+                                    "49631 29462" ,
+                                    "63975 55943" ,
+                                    "10021 63234" ,
+                                    "62141 66554" ,
+                                    "46929 25443"};
+        profile(p);*/
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String params = reader.readLine();

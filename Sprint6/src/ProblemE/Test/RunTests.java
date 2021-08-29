@@ -45,6 +45,7 @@ public class RunTests {
                             "1\n" +
                                         "1 2 3 4"));
 
-        runner.run(new String[]{"EXAMPLE-1"});
+//      runner.run(new String[]{"EXAMPLE-1"});
+        runner.run();
     }
 }
