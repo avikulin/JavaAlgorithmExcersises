@@ -42,18 +42,42 @@ class Graph implements Iterable<Integer> {
     public void setStartVertex(int vertex) {
         startVertexId = vertex;
     }
+    // fast enough solution 0.55s
+    public void TraverseRoutes(){
+        Queue<Integer> vertexQueue = new LinkedList<>();
+        boolean[] visitedVertexes = new boolean[numberOfVertexes + 1];
+        vertexQueue.add(this.startVertexId);
+        Arrays.fill(this.pathStorage, Integer.MAX_VALUE);
+        Arrays.fill(this.originStorage, -1);
+        pathStorage[0] = -1;
+        pathStorage[this.startVertexId] = 0;
+
+        while (!vertexQueue.isEmpty()) {
+            int currentVertex = vertexQueue.poll();
+
+            int currentPath = pathStorage[currentVertex];
+            visitedVertexes[currentVertex] = true;
+
+            List<Path> adjVertexes = graphStorage[currentVertex];
+            //exit if there are no edges from the current vertex.
+            if (adjVertexes == null) return;
+
+            for (Path path : adjVertexes) {
+                int vertexId = path.getDestination();
+                int possiblePathTo = currentPath + path.distance;
+                int actualPathTo = pathStorage[vertexId];
+                if (possiblePathTo < actualPathTo) {
+                    pathStorage[vertexId] = possiblePathTo;
+                    originStorage[vertexId] = currentVertex;
+                }
+                if (visitedVertexes[vertexId] == false) {
+                    vertexQueue.add(vertexId);
+                }
+            }
+        }
+    }
 
     public int getMinDistanceTo(int destinationId){
-        /*int res = 0;
-        int currentVertex = destinationId;
-        int currentOrigin = originStorage[currentVertex];
-        while (currentOrigin!=startVertexId){
-            if (originStorage[currentVertex]==-1) return -1;
-            res += pathStorage[currentVertex];
-            currentOrigin = originStorage[currentVertex];
-            currentVertex = currentOrigin;
-        }*/
-
         int distance = this.pathStorage[destinationId];
         return (distance==Integer.MAX_VALUE)?-1:distance;
     }
@@ -104,7 +128,7 @@ class DijkstraIterator implements Iterator<Integer> {
     private int startVertexId;
     private int currentVertex;
 
-
+    //---too slow! 0.62s
     public DijkstraIterator( List<Path>[] vertexStorage, int[] pathStorage, int[] originStorage, int startVertexId) {
         this.vertexStorage = vertexStorage;
         this.pathStorage = pathStorage;
@@ -128,11 +152,9 @@ class DijkstraIterator implements Iterator<Integer> {
     @Override
     public Integer next() {
         currentVertex = vertexQueue.poll();
+
         int currentPath = pathStorage[currentVertex];
         visitedVertexes[currentVertex] = true;
-
-        int currentMinPathTo = Integer.MAX_VALUE;
-        int possibleDestTo = -1;
 
         List<Path> adjVertexes = vertexStorage[currentVertex];
         //exit if there are no edges from the current vertex.
@@ -140,7 +162,6 @@ class DijkstraIterator implements Iterator<Integer> {
 
         for (Path path : adjVertexes) {
             int vertexId = path.getDestination();
-            int distanceTo = path.getDistance();
             int possiblePathTo = currentPath + path.distance;
             int actualPathTo = pathStorage[vertexId];
             if (possiblePathTo < actualPathTo){
@@ -148,15 +169,10 @@ class DijkstraIterator implements Iterator<Integer> {
                 originStorage[vertexId] = currentVertex;
             }
             if (visitedVertexes[vertexId]==false) {
-                if(distanceTo < currentMinPathTo){
-                    currentMinPathTo = distanceTo;
-                    possibleDestTo = vertexId;
-                }
+                vertexQueue.add(vertexId);
             }
         }
-        if (possibleDestTo != -1) {
-            vertexQueue.add(possibleDestTo);
-        }
+
         return currentVertex;
     }
 }
@@ -183,7 +199,8 @@ public class SolutionF {
         int pathStartId = Integer.parseInt(startAndDestinationTokens.nextToken());
         int pathDestId =  Integer.parseInt(startAndDestinationTokens.nextToken());
         graph.setStartVertex(pathStartId);
-        for (Integer vertex : graph){}
+        graph.TraverseRoutes();
+        /*for (Integer vertex : graph){}*/// <- idiomatically right, but not fast enough. gain TL ~0.62s.
         return String.valueOf(graph.getMinDistanceTo(pathDestId));
     }
 

@@ -72,6 +72,6 @@ public class RunTests {
                                             "5 6"
                                     },
                 "2"));
-        runner.run(new String[]{"EXAMPLE-12"});
+        runner.run(/*new String[]{"EXAMPLE-12"}*/);
     }
 }
