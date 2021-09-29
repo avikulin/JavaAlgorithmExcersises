@@ -1,12 +1,10 @@
-// Код посылки в Яндекс.Контест - 53616886
+// Код посылки в Яндекс.Контест - 53640916
 package FinalB; //- эту строку нужно закомментировать перед отправкой в Яндекс. Контест.
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 /*
     Гениальный подход взял отсуюда - https://yandex-students.slack.com/archives/C024VK4DYDC/p1630589363071200
@@ -116,8 +114,8 @@ class Graph {
      * Выполнение обхода графа в вглубину, начиная с заранее заданной начальной вершины.
      */
     public void traverseDFS() {
-        Stack<Integer> vertexQueue = new Stack<>();
-        vertexQueue.add(this.startVertexId);
+        Deque<Integer> vertexQueue = new ArrayDeque<>();
+        vertexQueue.push(this.startVertexId);
         while (!vertexQueue.isEmpty()) {
             int currentVertex = vertexQueue.peek();
             if (!visitedVertexes[currentVertex]) {
