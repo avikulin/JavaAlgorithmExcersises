@@ -117,18 +117,6 @@ class Graph {
         this.numberOfMstVertices++;
         if (this.graphStorage[vertex] == null) return;
         List<Edge> adjVertexes = this.graphStorage[vertex];
-
-        // с удивлением обнаружил, что цикл с итератором на 20% менее эффективен.
-        // и вообще итераторы оказались чудовищно неэффективны, как по времени, так и по памяти.
-        // все бэст-практисы профайлеру под хвост.... когда бьешься за миллисекунды - уже не до красоты.
-
-        /*for (Edge e : adjVertexes) {
-            if (!this.mstAddedVertexes[e.getOppositeVertex(vertex)]) {
-                e.setMSTIncludedVertex(vertex);
-                this.mstCandidateEdges.add(e);
-            }
-        }*/
-
         for (int i = 0; i < adjVertexes.size(); i++) {
             Edge e = adjVertexes.get(i);
             if (!this.mstAddedVertexes[e.getOppositeVertex(vertex)]) {
@@ -219,10 +207,11 @@ class Edge implements Comparable<Edge> {
      * @param vertex    Код вершины
      */
     public void setMSTIncludedVertex(int vertex) {
-        if (vertex == vertexA)
+        if (vertex == vertexA) {
             this.vertexAinMST = true;
-        else
+        } else {
             this.vertexBinMST = true;
+        }
     }
 
     /**
