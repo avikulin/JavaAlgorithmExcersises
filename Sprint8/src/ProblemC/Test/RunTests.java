@@ -2,14 +2,14 @@ package ProblemC.Test;
 
 // import test utilities
 
-import ProblemC.SolutionC;
+import ProblemC.SolutionCv2;
 import YTester.YTestCase;
 import YTester.YTestRunner;
 
 public class RunTests {
     public static void main(String[] args) {
         YTestRunner<String, String[]> tr = new YTestRunner<String, String[]>(
-                SolutionC::process,
+                SolutionCv2::process,
                 String::equals,
                 i -> i,
                 200);
@@ -75,6 +75,6 @@ public class RunTests {
                 )
         );
         // run all tests & print results to console
-        tr.run(/*new String[]{"EXAMPLE-4"}*/);
+        tr.run(/*new String[]{"EXAMPLE-2"}*/);
     }
 }
