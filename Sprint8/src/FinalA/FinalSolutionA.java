@@ -1,7 +1,6 @@
 package FinalA;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.*;
 
 /*
      Обработка упакованной строки a2[aa3[b]]c3[d]e
@@ -24,60 +23,78 @@ import java.util.Deque;
         2[aa3[b]] -> "aabbbaabbb"
         3[d] -> "ddd"
  */
-class PackedString {
-    private String prefix;
-    private int multiplicator;
-    private String template;
-    private String postfix;
+class PackingKey {
+    private final int multiplicand;
+    private final String template;
 
-    public PackedString(String prefix, int multiplicator, String template, String postfix) {
-        this.prefix = prefix;
-        this.multiplicator = multiplicator;
+    public PackingKey(int multiplicand, String template) {
+        this.multiplicand = multiplicand;
         this.template = template;
-        this.postfix = postfix;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        PackingKey that = (PackingKey) o;
+        return multiplicand == that.multiplicand &&
+                template.equals(that.template);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(multiplicand, template);
     }
 }
 
-public class FinalSolutionA {
-    public static String unpackStringToken(String prefix, int multiplicator, String template) {
-        StringBuilder res = new StringBuilder();
-        if (prefix != null) {
-            res.append(prefix);
-        }
-        for (int m = 0; m < multiplicator; m++) {
-            res.append(template);
-        }
-        return res.toString();
+class StringProcessor {
+    private final Map<PackingKey, String> cacheStorage;
+
+    public StringProcessor(Map<PackingKey, String> cache) {
+        cacheStorage = cache;
     }
 
-    public static String parseAndUnpackString(String str) {
-        Deque<Integer> bracketsPos = new ArrayDeque<>();
-       String recursiveResult = "";
+    public String unpackStringToken(String prefix, int multiplicand, String template) {
+        String res = prefix;
+        //попробуем получить распакованный паттерн из кэша
+        PackingKey key = new PackingKey(multiplicand, template);
+        String valueFromCache = cacheStorage.get(key);
+        if (valueFromCache == null) {
+            String valueHolder = "";
+            for (int m = 0; m < multiplicand; m++) {
+                valueHolder = valueHolder.concat(template);
+            }
+            //добавление распакованного значения паттерна в кэш
+            cacheStorage.put(key, valueHolder);
+            res = res.concat(valueHolder);
+        } else {
+            res = res.concat(valueFromCache);
+        }
 
-        int rightPosition = 0;
-        /*
-                h  !  2  [  a  a  3  [  b  ]  c  3  [  d  ]  e  ]  ?  g  h
-                0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
+        return res;
+    }
 
-                !  2  [  a  b  3  [  c  d  4  [  g  h  ]  ]  ]  ?  f
-                0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
-         */
+    public String parseAndUnpackString(String str) {
+        Deque<Integer> bracketsPos = new ArrayDeque<>(100);
+        String recursiveResult = "";
+
+        int backtrackingPosition = -1;
         for (int i = 0; i < str.length(); i++) {
             if (str.charAt(i) == '[') {
                 bracketsPos.push(i);
             }
             if (str.charAt(i) == ']') {
+                // парсинг префикса и вычисление динамической части вложенного выражения
                 int openBracketPos = bracketsPos.pop();
                 int multiplicator = Character.getNumericValue(str.charAt(openBracketPos - 1));
-                if (openBracketPos > rightPosition) {
+                if (openBracketPos > backtrackingPosition) {
                     String templateStr = str.substring(openBracketPos + 1, i);
-                    int prevBracketPos = bracketsPos.isEmpty() ? 0 : bracketsPos.peek();
-                    int prefixBeginPos = Math.max(rightPosition, prevBracketPos) + 1;
+                    int prevBracketPos = bracketsPos.isEmpty() ? -1 : bracketsPos.peek();
+                    int prefixBeginPos = Math.max(backtrackingPosition, prevBracketPos) + 1;
                     String prefixStr = str.substring(prefixBeginPos, openBracketPos - 1);
                     recursiveResult = recursiveResult.concat(unpackStringToken(prefixStr, multiplicator, templateStr));
                 } else {
-                    // тут может быть только постфикс вложенного токена (все открывающие скобки уже погашены)
-                    String postfixStr = str.substring(rightPosition + 1, i);
+                    // парсинг статического постфикса вложенного выражения и вычисление внешнего выражения
+                    String postfixStr = str.substring(backtrackingPosition + 1, i);
                     recursiveResult = recursiveResult.concat(postfixStr);
                     String templateStr = recursiveResult;
                     int prevBracketPos = bracketsPos.isEmpty() ? -1 : bracketsPos.peek();
@@ -85,17 +102,26 @@ public class FinalSolutionA {
                     String prefixStr = str.substring(prefixBeginPos, openBracketPos - 1);
                     recursiveResult = unpackStringToken(prefixStr, multiplicator, templateStr);
                 }
-                rightPosition = i;
+                backtrackingPosition = i;
             }
         }
 
-        String finalPostfix = (rightPosition + 1 < str.length()) ? str.substring(rightPosition + 1, str.length()) : null;
-        String res = (finalPostfix == null) ? recursiveResult : recursiveResult.concat(finalPostfix);
+        String finalPostfix = (backtrackingPosition + 1 < str.length()) ?
+                str.substring(backtrackingPosition + 1) : null;
 
-        return res;
+        return (finalPostfix == null) ? recursiveResult : recursiveResult.concat(finalPostfix);
+    }
+}
+
+public class FinalSolutionA {
+
+
+    public static String unpackTestDriverFunc(String input) {
+        Map<PackingKey, String> cache = new HashMap<>(100);
+        StringProcessor processor = new StringProcessor(cache);
+        return processor.parseAndUnpackString(input);
     }
 
     public static void main(String[] args) {
-          System.out.println(parseAndUnpackString("y!2[a2[2[b1[01]c2[23]d]e3[45]]f]?x"));
     }
 }

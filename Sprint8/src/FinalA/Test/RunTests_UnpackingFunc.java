@@ -9,7 +9,7 @@ import YTester.YTestRunner;
 public class RunTests_UnpackingFunc {
     public static void main(String[] args) {
         YTestRunner<String, String> tr = new YTestRunner<String, String>(
-                FinalSolutionA::parseAndUnpackString,
+                FinalSolutionA::unpackTestDriverFunc,
                 String::equals,
                 i -> i,
                 200);
@@ -103,7 +103,67 @@ public class RunTests_UnpackingFunc {
                 )
         );
 
+        /* TEST-5
+
+         */
+        tr.append(new YTestCase<String, String>(
+                        "TEST-5",
+                        "h!2[aa3[b]c3[d]e]?gh_3[x]_z",
+                        "h!aabbbcdddeaabbbcddde?gh_xxx_z"
+                )
+        );
+
+        /* TEST-6
+
+         */
+        tr.append(new YTestCase<String, String>(
+                        "TEST-6",
+                        "h!3[b]3[b]_z",
+                        "h!bbbbbb_z"
+                )
+        );
+        /* TEST-5
+
+         */
+        tr.append(new YTestCase<String, String>(
+                        "TEST-7",
+                        "h!3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
+                                 "3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]_z",
+                        "h!bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+                                    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_z"
+                )
+        );
+
+
         // run all tests & print results to console
-        tr.run();
+        tr.run(/*new String[]{"TEST-6"}*/);
     }
 }
