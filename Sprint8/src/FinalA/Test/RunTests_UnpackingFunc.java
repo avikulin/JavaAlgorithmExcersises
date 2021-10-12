@@ -122,9 +122,66 @@ public class RunTests_UnpackingFunc {
                         "h!bbbbbb_z"
                 )
         );
-        /* TEST-5
+        /*
 
          */
+
+        tr.append(new YTestCase<String, String>(
+                        "TEST-7",
+                        "",
+                        ""
+                )
+        );
+
+        tr.append(new YTestCase<String, String>(
+                        "TEST-8",
+                        "2[a]2[ab]",
+                        "aaabab"
+                )
+        );
+
+        tr.append(new YTestCase<String, String>(
+                        "TEST-9",
+                        "3[a]2[r2[t]]",
+                        "aaarttrtt"
+                )
+        );
+
+        tr.append(new YTestCase<String, String>(
+                        "TEST-10",
+                        "a2[aa3[b]]",
+                        "aaabbbaabbb"
+                )
+        );
+
+        tr.append(new YTestCase<String, String>(
+                        "TEST-11",
+                        "abacabaca",
+                        "abacabaca"
+                )
+        );
+
+        tr.append(new YTestCase<String, String>(
+                        "TEST-12",
+                        "2[abac]a",
+                        "abacabaca"
+                )
+        );
+
+        tr.append(new YTestCase<String, String>(
+                        "TEST-13",
+                        "3[aba]",
+                        "abaabaaba"
+                )
+        );
+
+        tr.append(new YTestCase<String, String>(
+                        "TEST-7",
+                        "",
+                        ""
+                )
+        );
+
         tr.append(new YTestCase<String, String>(
                         "TEST-7",
                         "h!3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]3[b]" +
@@ -164,6 +221,6 @@ public class RunTests_UnpackingFunc {
 
 
         // run all tests & print results to console
-        tr.run(/*new String[]{"TEST-6"}*/);
+        tr.run(/*new String[]{"TEST-9"}*/);
     }
 }
