@@ -80,6 +80,15 @@ class StringProcessor {
         3  [  a  ]  2  [  r  2  [  t  ]  ] = aaarttrtt
         |  |  |  |  |  |  |  |  |  |  |  |
         0  1  2  3  4  5  6  7  8  9 10 11
+
+        h  !  2  [  a  a  3  [  b  ]  c  3  [  d  ]  e  ]  ?  g  h
+        |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+        0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
+
+        k  !  2  [  1  <  3  [  2  <  3  [  a  b  ]  >  ]  >  ]  ?  f
+        |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+        0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
+
      */
     public String parseAndUnpackString(String str) {
         Deque<Integer> bracketsPos = new ArrayDeque<>(100);
@@ -89,6 +98,7 @@ class StringProcessor {
 
         //int backtrackingPosition = -1;
         backTrackingBarrier.push(-1);
+        int backtrackingLevelLength = 0;
         for (int i = 0; i < str.length(); i++) {
             if (str.charAt(i) == '[') {
                 bracketsPos.push(i);
@@ -105,22 +115,32 @@ class StringProcessor {
                     String prefixStr = str.substring(prefixBeginPos, openBracketPos - 1);
                     //recursiveResult = recursiveResult.concat(unpackStringToken(prefixStr, multiplicator, templateStr));
                     recursiveStack.push(unpackStringToken(prefixStr, multiplicator, templateStr));
+                    backtrackingLevelLength++;
                 } else {
                     // парсинг статического постфикса вложенного выражения и вычисление внешнего выражения
-                    if (backTrackingBarrier.size() > 1){
-                        backTrackingBarrier.pop();
-                    }
-                    backtrackingPosition = backTrackingBarrier.peek();
+                    String templateStr = "";
                     String postfixStr = str.substring(backtrackingPosition + 1, i);
+
+                    if (backTrackingBarrier.size() > 1){
+                        while (backtrackingLevelLength > 0) {
+                            templateStr = templateStr.concat(recursiveStack.pollLast());
+                            backTrackingBarrier.pop();
+                            backtrackingLevelLength--;
+                        }
+                    }
+                    templateStr = templateStr.concat(postfixStr);
+                    backtrackingPosition = backTrackingBarrier.peek();
+
                     //recursiveResult = recursiveResult.concat(postfixStr);
                     //String templateStr = recursiveResult;
-                    String templateStr = recursiveStack.pop();
+                    //String templateStr = recursiveStack.pop();
                     int prevBracketPos = bracketsPos.isEmpty() ? -1 : bracketsPos.peek();
                     //int prefixBeginPos = prevBracketPos + 1;
                     int prefixBeginPos = Math.max(backtrackingPosition, prevBracketPos) + 1;
                     String prefixStr = str.substring(prefixBeginPos, openBracketPos - 1);
                     //recursiveResult = unpackStringToken(prefixStr, multiplicator, templateStr);
                     recursiveStack.push(unpackStringToken(prefixStr, multiplicator, templateStr));
+                    backtrackingLevelLength++;
                 }
                 //backtrackingPosition = i;
                 backTrackingBarrier.push(i);

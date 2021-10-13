@@ -221,6 +221,6 @@ public class RunTests_UnpackingFunc {
 
 
         // run all tests & print results to console
-        tr.run(/*new String[]{"TEST-9"}*/);
+        tr.run(new String[]{"TEST-9"});
     }
 }
