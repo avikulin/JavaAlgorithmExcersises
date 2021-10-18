@@ -1,0 +1,90 @@
+
+		  |<-лемма#1->|<-- лемма#2-->|		   |<-лемма#3->|<-- лемма#4-->|
+									 |<------------------ лемма#5 ------------------>|	
+		  a  3  [  b  ]  c  2  [  d  ]  e  2  [  f  3  [  g  ]  h  3  [  k  ]  l  m  ]  n  o
+		  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+Время   ->0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
+Переход ->*	    +     -        +     -        +        +     -        +     -  		 -
+Уровень ->0	    1     0        1     0        1        2     1        2     1  		 0
+
+
+0: level=0, backTrack = 0, localResult = "", multiplierStack = [], resultStack = [];
+2: level=1, backTrack = 2, localResult = "", multiplierStack = [3], resultStack = ["a"];
+3: level=1, backTrack = 0, localResult = "b", multiplierStack = [3], resultStack = ["a"];
+4: level=0, backTrack = 0, localResult = "", multiplierStack = [3], resultStack = ["a","b"];
+<вычисление леммы #1> = "abbb"
+
+5: level=0, backTrack = 4, localResult = "abbb", multiplierStack = [], resultStack = [];
+7: level=1, backTrack = 7, localResult = "", multiplierStack = [2], resultStack = ["abbbc"];
+8: level=1, backTrack = 7, localResult = "d", multiplierStack = [2], resultStack = ["abbbc"];
+9: level=0, backTrack = 7, localResult = "", multiplierStack = [2], resultStack = ["abbbc","d"];
+<вычисление леммы #2> = "abbbcdd"
+
+10: level=0, backTrack = 9, localResult = "abbbcdd", multiplierStack = [], resultStack = [];
+12: level=1, backTrack = 12, localResult = "", multiplierStack = [2], resultStack = ["abbbcdde"];
+15: level=2, backTrack = 15, localResult = "", multiplierStack = [2,3], resultStack = ["abbbcdde","f"];
+16: level=2, backTrack = 15, localResult = "g", multiplierStack = [2,3], resultStack = ["abbbcdde","f"];
+17: level=1, backTrack = 15, localResult = "", multiplierStack = [2,3], resultStack = ["abbbcdde","f","g"];
+<вычисление леммы #3> = "fggg"
+
+18: level=1, backTrack = 17, localResult = "fggg", multiplierStack = [2], resultStack = ["abbbcdde"];
+20: level=2, backTrack = 20, localResult = "", multiplierStack = [2,3], resultStack = ["abbbcdde","fgggh"];
+21: level=2, backTrack = 20, localResult = "k", multiplierStack = [2,3], resultStack = ["abbbcdde","fgggh"];
+22: level=1, backTrack = 20, localResult = "", multiplierStack = [2,3], resultStack = ["abbbcdde","fgggh","k"];
+<вычисление леммы #4> = "fggghkkk"
+
+23: level=1, backTrack = 22, localResult = "fggghkkk",  multiplierStack = [2],resultStack = ["abbbcdde"];
+25: level=1, backTrack = 22, localResult = "",  multiplierStack = [2], resultStack = ["abbbcdde","fggghkkklm"];
+<вычисление леммы #5> = "abbbcddefggghkkklmfggghkkklm"
+
+25: level=1, backTrack = 25, localResult = "abbbcddefggghkkklmfggghkkklm",  multiplierStack = [], resultStack = [];
+<обработка постфикса>
+
+27: level=1, backTrack = 25, localResult = "abbbcddefggghkkklmfggghkkklmno",  multiplierStack = [], resultStack = [];
+
+Алгоритм:
+
+	при входе:
+	1) вычислить множитель (предыдущая позиция относительно "[") и положить его в multiplierStack
+	2) получить значение backTrace и вычислить префикс
+	3) прибавляем localResult и префикс. Результат кладем в resultStack
+	4) обновить значение backTrace
+
+	перед выходом:
+	1) получить backTrace
+	2) вычислить локальный сффикс и прибавить его к localResult
+	3) кладем localResult в стэк
+	4) очищаем localResult
+
+	при выходе:
+	1) достаем из стэка 2 числа ( template и prefix)
+	2) достаем множитель из multiplierStack
+	3) вычисляем
+	4) кладем в localResult
+
+
+Алгоритм (оптимизация):
+
+	при входе:
+	1) вычислить множитель (предыдущая позиция относительно "[") и положить его в multiplierStack
+	2) получить значение backTrace и вычислить префикс
+	3) прибавляем localResult и префикс. Результат кладем в resultStack
+	4) обновить значение backTrace
+
+	при выходе:
+	1) получить backTrace
+	2) вычислить локальный суффикс и прибавить его к localResult
+	3) достаем префикс из стэка resultStack
+	4) достаем множитель из multiplierStack
+	5) вычисляем
+	6) кладем в localResult
+	7) обновить значение backTrace
+
+	получить backTrace
+	вход(множитель, префикс)
+	выход(backTrace, вычислятор)
+
+
+
+	LexicalParser
+	GrammarProcessor

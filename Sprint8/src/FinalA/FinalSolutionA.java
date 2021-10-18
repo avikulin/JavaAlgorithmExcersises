@@ -261,8 +261,8 @@ class GrammarProcessor {
     /**
      * Операция обработки суффикса на 0-м уровне лексического дерева
      */
-    public void finalize() {
-        String globalSuffix = strContext.substring(backTracePosition, strContext.length());
+    public void processGlobalSuffix() {
+        String globalSuffix = strContext.substring(backTracePosition);
         localResult = localResult.concat(globalSuffix);
         backTracePosition = -1;
     }
@@ -270,7 +270,7 @@ class GrammarProcessor {
     /**
      * Возврат накопленного значения вычисленных лексем (с 1-й по текущую)
      *
-     * @return
+     * @return Литерал накопленного значения вычисленных лексем
      */
     public String getCurrentLocalResult() {
         return localResult;
@@ -281,8 +281,6 @@ class GrammarProcessor {
  * Класс лексического анализа
  */
 class LexicalParser {
-    private final char START_SUBEXPRESSION_MARKER = '[';
-    private final char END_SUBEXPRESSION_MARKER = ']';
 
     private final HashMap<String, String> phraseCache;
     private final GrammarProcessor gProcessor;
@@ -313,17 +311,22 @@ class LexicalParser {
 
         gProcessor.init(rawString);
 
+        char START_SUBEXPRESSION_MARKER = '[';
+        char END_SUBEXPRESSION_MARKER = ']';
+
         int finalPos = rawString.length();
         for (int i = 0; i < finalPos; i++) {
             char testChar = rawString.charAt(i);
+
             if (testChar == START_SUBEXPRESSION_MARKER) {
                 gProcessor.enterSubExpression(i);
             }
+
             if (testChar == END_SUBEXPRESSION_MARKER) {
                 gProcessor.returnFromSubExpression(i);
             }
         }
-        gProcessor.finalize();
+        gProcessor.processGlobalSuffix();
 
         String res = gProcessor.getCurrentLocalResult();
         phraseCache.putIfAbsent(rawString, res);
@@ -389,7 +392,7 @@ public class FinalSolutionA {
      * Точка входа в программу
      *
      * @param args Аргументы командной строки (для целей совместимости)
-     * @throws IOException
+     * @throws IOException  Может выбросить исключение ввода-вывода
      */
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
