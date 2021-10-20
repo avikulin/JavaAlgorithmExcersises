@@ -61,6 +61,6 @@ public class RunTests {
         );
 
         // run all tests & print results to console
-        tr.run( /*new String[]{"TEST-10"}*/);
+        tr.run( /*new String[]{"TEST-1"}*/);
     }
 }
